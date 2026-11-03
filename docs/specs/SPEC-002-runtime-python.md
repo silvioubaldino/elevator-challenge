@@ -45,7 +45,7 @@ API do `elevator`:
 - Timeout de `handle`: 1000 ms → o Worker é encerrado e recriado no próximo `load`.
 
 ## Critérios de aceite
-Cada teste cita `SPEC-002/AC-N`. Testes rodam o Pyodide em Node.
+Testes rodam o Pyodide em Node.
 ```gherkin
 # AC-1
 Cenário: template não faz nada

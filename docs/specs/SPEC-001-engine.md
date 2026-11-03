@@ -41,7 +41,7 @@ type SimulationState = { tick: number; status: "running" | "success" | "timeout"
 - `step()` só resolve depois do `Runtime` responder: o relógio fica parado enquanto o aluno pensa.
 
 ## Critérios de aceite
-Cada teste cita `SPEC-001/AC-N` e usa um `Runtime` fake em TS.
+Cada teste usa um `Runtime` fake em TS.
 ```gherkin
 # AC-1
 Cenário: início parado
