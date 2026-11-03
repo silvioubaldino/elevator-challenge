@@ -17,7 +17,6 @@ Só se esta SPEC for dona de um contrato. Quem consome referencia `SPEC-NNN §Co
 ```
 
 ## Critérios de aceite
-Cada teste cita `SPEC-NNN/AC-N` (nome, tag ou comentário).
 ```gherkin
 # AC-1
 Cenário: <comportamento>

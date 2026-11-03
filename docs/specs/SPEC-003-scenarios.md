@@ -33,7 +33,6 @@ Tempos com SPEC-001 (1 s/andar, portas 2 s). "Ótimo" = referência que atende n
 | `zigzag` | Zigue-zague | 5 | A 0: 1→0 · B 0,5: 9→10 · C 1: 2→0 | 90 s | FIFO faz 5→1→9→2→0→10; ótimo desce tudo e depois sobe |
 
 ## Critérios de aceite
-Cada teste cita `SPEC-003/AC-N`.
 ```gherkin
 # AC-1
 Cenário: chegada de Passenger
@@ -73,8 +72,13 @@ Cenário: cenários fixos geram conflito
 ```
 
 ## Plano
-- [ ] `src/scenario.ts`: tipo, validação e injeção de `Passenger` no `Tick` (AC-1, AC-2, AC-5)
-- [ ] fim do `Scenario` no laço do `Engine` (AC-3, AC-4)
-- [ ] `scenarios/first-ride.json`, `on-the-way.json`, `zigzag.json`
-- [ ] controladores de referência em `test/controllers/` (AC-6)
-- [ ] testes AC-1..AC-6
+- [x] `src/scenario.ts`: tipo, validação e injeção de `Passenger` no `Tick` (AC-1, AC-2, AC-5)
+- [x] fim do `Scenario` no laço do `Engine` (AC-3, AC-4)
+- [x] `scenarios/first-ride.json`, `on-the-way.json`, `zigzag.json`
+- [x] controladores de referência em `test/controllers/` (AC-6)
+- [x] testes AC-1..AC-6
+
+## Notas
+- Fim do `Scenario`: `tick` para no instante da chegada (success) ou do limite (timeout); tempo = `tick` × 0,1 s.
+- Em timeout, `Passenger` que nem apareceu entra em `passengers` como `waiting`.
+- Validação roda em `createEngine`; erro é `ScenarioError`.

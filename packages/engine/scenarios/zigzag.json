@@ -1,0 +1,13 @@
+{
+  "id": "zigzag",
+  "title": "Zigue-zague",
+  "description": "O elevador começa no 5º andar e recebe chamadas espalhadas pelo prédio.",
+  "building": { "min_floor": 0, "max_floor": 10 },
+  "start_floor": 5,
+  "time_limit_s": 90,
+  "passengers": [
+    { "id": "A", "at_s": 0, "from": 1, "to": 0 },
+    { "id": "B", "at_s": 0.5, "from": 9, "to": 10 },
+    { "id": "C", "at_s": 1, "from": 2, "to": 0 }
+  ]
+}

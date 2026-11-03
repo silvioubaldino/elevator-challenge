@@ -27,7 +27,7 @@ related: [SPEC-001, SPEC-002, SPEC-003, RNF-05, RNF-06]
 - Tema claro/escuro pelo sistema; botões acesos com cor de destaque.
 
 ## Critérios de aceite
-Cada teste cita `SPEC-004/AC-N` (Playwright ou Testing Library).
+Testes com Playwright ou Testing Library.
 ```gherkin
 # AC-1
 Cenário: primeira visita
