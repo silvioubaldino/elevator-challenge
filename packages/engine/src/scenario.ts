@@ -1,4 +1,3 @@
-// Contrato de SPEC-003 §Contratos (dona do formato); aqui só o tipo que o Engine consome.
 export type Scenario = {
   id: string
   title: string

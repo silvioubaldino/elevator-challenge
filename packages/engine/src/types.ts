@@ -1,7 +1,6 @@
-// Contratos de SPEC-001 §Contratos. Payloads que cruzam linguagens usam snake_case.
 export const TICK_MS = 100
-export const FLOOR_TRAVEL_TICKS = 10 // 1 s/andar
-export const DOOR_CYCLE_TICKS = 20 // portas 2 s
+export const FLOOR_TRAVEL_TICKS = 10
+export const DOOR_CYCLE_TICKS = 20
 
 export type Direction = "up" | "down" | null
 export type Event =

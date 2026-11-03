@@ -12,7 +12,6 @@ import {
 
 type Reply = { commands: Command[]; logs: string[] } | { error: RuntimeError }
 
-/** Runtime fake: `react` decide a resposta; `delay_ms` simula um aluno lento. */
 function fakeRuntime(react: (batch: EventBatch) => Command[] | { error: RuntimeError }, delay_ms = 0) {
   const batches: EventBatch[] = []
   const runtime: Runtime = {
@@ -34,7 +33,6 @@ const moveTo = (floor: number): Command => ({ type: "move_to", floor })
 const has = (events: Event[], type: Event["type"], floor?: number) =>
   events.some((e) => e.type === type && (floor === undefined || ("floor" in e && e.floor === floor)))
 
-/** Aluno mínimo: vai ao andar de qualquer botão apertado. */
 const goToButtons = (batch: EventBatch): Command[] =>
   batch.events.flatMap((e) =>
     e.type === "call_button" || e.type === "cabin_button" ? [moveTo(e.floor)] : [],
@@ -57,8 +55,8 @@ async function until(engine: Engine, done: (s: SimulationState) => boolean, max 
 const pax = (id: string, at_s: number, from: number, to: number) => ({ id, at_s, from, to })
 const building = { min_floor: 0, max_floor: 10 }
 
-describe("SPEC-001", () => {
-  it("SPEC-001/AC-1: início parado recebe idle no primeiro Tick", async () => {
+describe("engine", () => {
+  it("início parado recebe idle no primeiro Tick", async () => {
     const { runtime, batches } = fakeRuntime(() => [])
     const engine = createEngine({ runtime })
     await engine.step()
@@ -68,7 +66,7 @@ describe("SPEC-001", () => {
     expect(batches[0]!.elevator).toMatchObject({ current_floor: 0, idle: true, min_floor: 0, max_floor: 10 })
   })
 
-  it("SPEC-001/AC-2: move_to leva ao andar em 30 Tick, abre as portas e envia stop", async () => {
+  it("move_to leva ao andar em 30 Tick, abre as portas e envia stop", async () => {
     const { runtime, batches } = fakeRuntime((b) => (has(b.events, "idle") && b.tick === 0 ? [moveTo(3)] : []))
     const engine = createEngine({ runtime })
     await steps(engine, 1)
@@ -78,7 +76,7 @@ describe("SPEC-001", () => {
     expect(s.elevator).toMatchObject({ position: 3, doors_open: true, direction: null, target_floor: null })
   })
 
-  it("SPEC-001/AC-3: passa direto por andar que não é Target", async () => {
+  it("passa direto por andar que não é Target", async () => {
     const { runtime, batches } = fakeRuntime((b) => (has(b.events, "idle") ? [moveTo(6)] : []))
     const engine = createEngine({ runtime })
     engine.press("call", 3)
@@ -95,7 +93,7 @@ describe("SPEC-001", () => {
     expect(batches.some((b) => has(b.events, "stop", 3))).toBe(false)
   })
 
-  it("SPEC-001/AC-4: novo Target à frente substitui o anterior", async () => {
+  it("novo Target à frente substitui o anterior", async () => {
     const { runtime, batches } = fakeRuntime((b) => (has(b.events, "idle") ? [moveTo(10)] : goToButtons(b)))
     const engine = createEngine({ runtime })
     const mid = await steps(engine, 26)
@@ -107,7 +105,7 @@ describe("SPEC-001", () => {
     expect(batches.filter((b) => has(b.events, "stop")).map((b) => b.events)).toEqual([[{ type: "stop", floor: 5 }]])
   })
 
-  it("SPEC-001/AC-5: Target para trás inverte no próximo andar, sem abrir portas", async () => {
+  it("Target para trás inverte no próximo andar, sem abrir portas", async () => {
     const { runtime, batches } = fakeRuntime((b) => (has(b.events, "idle") ? [moveTo(10)] : goToButtons(b)))
     const engine = createEngine({ runtime })
     await steps(engine, 46)
@@ -128,7 +126,7 @@ describe("SPEC-001", () => {
     expect(batches.filter((b) => has(b.events, "stop")).flatMap((b) => b.events)).toEqual([{ type: "stop", floor: 2 }])
   })
 
-  it("SPEC-001/AC-6: chamada no andar atual exige move_to", async () => {
+  it("chamada no andar atual exige move_to", async () => {
     const { runtime } = fakeRuntime(() => [])
     const engine = createEngine({ runtime })
     engine.press("call", 0)
@@ -137,7 +135,7 @@ describe("SPEC-001", () => {
     expect(s.call_buttons).toEqual([0])
   })
 
-  it("SPEC-001/AC-7: ao parar desembarca, embarca, apaga o CallButton e envia stop antes de cabin_button", async () => {
+  it("ao parar desembarca, embarca, apaga o CallButton e envia stop antes de cabin_button", async () => {
     const { runtime, batches } = fakeRuntime(goToButtons)
     const engine = createEngine({
       runtime,
@@ -162,7 +160,7 @@ describe("SPEC-001", () => {
     expect(s.cabin_buttons).toEqual([8])
   })
 
-  it("SPEC-001/AC-8: botão já aceso não gera Event", async () => {
+  it("botão já aceso não gera Event", async () => {
     const { runtime, batches } = fakeRuntime(goToButtons)
     const engine = createEngine({
       runtime,
@@ -174,11 +172,11 @@ describe("SPEC-001", () => {
     expect(cabin8).toHaveLength(1)
   })
 
-  it("SPEC-001/AC-9: portas fecham após 20 Tick e o Runtime recebe idle", async () => {
+  it("portas fecham após 20 Tick e o Runtime recebe idle", async () => {
     const { runtime, batches } = fakeRuntime((b) => (b.tick === 0 ? [moveTo(4)] : []))
     const engine = createEngine({ runtime })
     const opened = await until(engine, (s) => s.elevator.doors_open)
-    const t0 = opened.tick - 1 // índice do Tick em que as portas abriram
+    const t0 = opened.tick - 1
     expect(opened.elevator.position).toBe(4)
     await steps(engine, 19)
     expect(engine.state().elevator.doors_open).toBe(true)
@@ -190,7 +188,7 @@ describe("SPEC-001", () => {
     expect(last.elevator.idle).toBe(true)
   })
 
-  it("SPEC-001/AC-10: determinismo independente do tempo de resposta do Runtime", async () => {
+  it("determinismo independente do tempo de resposta do Runtime", async () => {
     const scenario = {
       building,
       start_floor: 5,
@@ -209,7 +207,7 @@ describe("SPEC-001", () => {
     expect(fast[fast.length - 1]!.passengers.map((p) => p.state)).toContain("arrived")
   })
 
-  it("SPEC-001/AC-11: erro do aluno para a simulação", async () => {
+  it("erro do aluno para a simulação", async () => {
     const err: RuntimeError = { kind: "exception", message: "boom", line: 3 }
     const { runtime } = fakeRuntime((b) => (b.tick === 0 ? [] : { error: err }))
     const engine = createEngine({ runtime })
@@ -226,7 +224,7 @@ describe("SPEC-001", () => {
   })
 })
 
-describe("SPEC-001 §Notas", () => {
+describe("engine edge cases", () => {
   it("move_to fora do prédio é ignorado e registrado no log", async () => {
     const { runtime } = fakeRuntime((b) => (b.tick === 0 ? [moveTo(11), moveTo(-1), moveTo(2.5)] : []))
     const engine = createEngine({ runtime })
@@ -239,7 +237,7 @@ describe("SPEC-001 §Notas", () => {
   it("move_to(current_floor) com portas abertas limpa o Target sem novo DoorCycle", async () => {
     const { runtime, batches } = fakeRuntime((b) => {
       if (b.tick === 0) return [moveTo(2)]
-      if (has(b.events, "stop", 2)) return [moveTo(5)] // Target pendente durante o DoorCycle
+      if (has(b.events, "stop", 2)) return [moveTo(5)]
       if (has(b.events, "call_button", 2)) return [moveTo(2)]
       return []
     })

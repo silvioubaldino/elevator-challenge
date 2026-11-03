@@ -15,7 +15,6 @@ import {
 
 export type EngineOptions = {
   runtime: Runtime
-  /** Sem `scenario` = Sandbox: prédio 0–10, início no T, sem Passenger (SPEC-003). */
   scenario?: Pick<Scenario, "building" | "start_floor" | "passengers">
 }
 
@@ -31,13 +30,12 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
   let error: RuntimeError | undefined
   const log: SimulationState["log"] = []
 
-  // Posição em décimos de andar (inteiro): evita erro de ponto flutuante. Andar = pos / FLOOR_TRAVEL_TICKS.
   let pos = scenario.start_floor * FLOOR_TRAVEL_TICKS
   let currentFloor = scenario.start_floor
   let target: number | null = null
   let direction: Direction = null
-  let doorTicks = 0 // > 0 = portas abertas
-  let justOpened = false // abriu neste Tick: o DoorCycle só começa a contar no seguinte
+  let doorTicks = 0
+  let justOpened = false
 
   const callButtons = new Set<number>()
   const cabinButtons = new Set<number>()
@@ -46,7 +44,7 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
     .map((p) => ({ ...p, at_tick: Math.round((p.at_s * 1000) / TICK_MS) }))
     .sort((a, b) => a.at_tick - b.at_tick)
   let presses: { kind: "call" | "cabin"; floor: number }[] = []
-  let pending: Event[] = [{ type: "idle" }] // Events gerados fora do laço (início e Command no andar)
+  let pending: Event[] = [{ type: "idle" }]
 
   const inRange = (floor: number) =>
     Number.isInteger(floor) && floor >= min_floor && floor <= max_floor
@@ -54,13 +52,13 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
   const doorsOpen = () => doorTicks > 0
 
   function lightCall(floor: number, events: Event[]) {
-    if (callButtons.has(floor)) return // RN-06
+    if (callButtons.has(floor)) return
     callButtons.add(floor)
     events.push({ type: "call_button", floor })
   }
 
   function lightCabin(floor: number, events: Event[]) {
-    if (cabinButtons.has(floor)) return // RN-06
+    if (cabinButtons.has(floor)) return
     cabinButtons.add(floor)
     events.push({ type: "cabin_button", floor })
   }
@@ -71,7 +69,6 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
     lightCabin(p.to, events)
   }
 
-  /** RN-03/RN-05: para no andar atual, abre as portas, desembarca, embarca. */
   function arrive(events: Event[]) {
     direction = null
     target = null
@@ -84,7 +81,6 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
     for (const p of passengers) if (p.state === "waiting" && p.from === currentFloor) board(p, events)
   }
 
-  /** Num andar, portas fechadas: para no Target, ou (re)decide o sentido (RN-02, RN-04). */
   function resolveAtFloor(events: Event[]) {
     if (target === null) direction = null
     else if (target === currentFloor) arrive(events)
@@ -145,7 +141,6 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
     }
     log.push({ tick, kind: "command", text })
     if (doorsOpen()) {
-      // Portas abertas no andar atual: sem novo DoorCycle (SPEC-001 §Notas).
       target = cmd.floor === currentFloor ? null : cmd.floor
       return
     }
@@ -206,7 +201,6 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
     }
   }
 
-  // `step()` concorrentes são serializados: o relógio só avança um Tick por vez.
   let queue: Promise<unknown> = Promise.resolve()
   return {
     step() {
