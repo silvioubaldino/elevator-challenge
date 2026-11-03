@@ -27,7 +27,7 @@ async function boot(code: string, timeout_ms?: number) {
 afterEach(() => runtime?.dispose())
 
 describe("runtime-python", () => {
-  it("SPEC-002/AC-1 template não faz nada", async () => {
+  it("template não faz nada", async () => {
     expect(await boot(template)).toBeNull()
     for (const event of [
       { type: "idle" },
@@ -39,7 +39,7 @@ describe("runtime-python", () => {
     }
   }, 60_000)
 
-  it("SPEC-002/AC-2 move_to vira Command", async () => {
+  it("move_to vira Command", async () => {
     await boot("def on_call_button(elevator, floor):\n    elevator.move_to(floor)\n")
     expect(await runtime.handle(batch({ type: "call_button", floor: 7 }))).toEqual({
       commands: [{ type: "move_to", floor: 7 }],
@@ -47,7 +47,7 @@ describe("runtime-python", () => {
     })
   }, 60_000)
 
-  it("SPEC-002/AC-3 Handler na ordem do batch", async () => {
+  it("Handler na ordem do batch", async () => {
     await boot(
       "def on_stop(elevator, floor):\n    print('stop', floor)\n" +
         "def on_cabin_button(elevator, floor):\n    print('cabin', floor)\n",
@@ -58,7 +58,7 @@ describe("runtime-python", () => {
     expect(result).toEqual({ commands: [], logs: ["stop 4", "cabin 8"] })
   }, 60_000)
 
-  it("SPEC-002/AC-4 estado do aluno persiste", async () => {
+  it("estado do aluno persiste", async () => {
     await boot(
       "calls = []\n" +
         "def on_call_button(elevator, floor):\n    calls.append(floor)\n    print(calls)\n",
@@ -68,7 +68,7 @@ describe("runtime-python", () => {
     expect(second).toEqual({ commands: [], logs: ["[3, 5]"] })
   }, 60_000)
 
-  it("SPEC-002/AC-5 target_floor reflete o move_to do batch", async () => {
+  it("target_floor reflete o move_to do batch", async () => {
     await boot(
       "def on_call_button(elevator, floor):\n    elevator.move_to(6)\n    print(elevator.target_floor())\n",
     )
@@ -76,7 +76,7 @@ describe("runtime-python", () => {
     expect(result).toMatchObject({ logs: ["6"] })
   }, 60_000)
 
-  it("SPEC-002/AC-6 move_to fora do prédio", async () => {
+  it("move_to fora do prédio", async () => {
     await boot("def on_call_button(elevator, floor):\n    elevator.move_to(11)\n")
     const result = await runtime.handle(batch({ type: "call_button", floor: 1 }))
     expect(result).toMatchObject({ error: { kind: "exception", line: 2 } })
@@ -84,12 +84,12 @@ describe("runtime-python", () => {
     expect(error.message).toContain("fora do prédio")
   }, 60_000)
 
-  it("SPEC-002/AC-7 erro de sintaxe", async () => {
+  it("erro de sintaxe", async () => {
     const error = await boot("def on_idle(elevator):\n    pass\nx = = 1\n")
     expect(error).toMatchObject({ kind: "syntax", line: 3 })
   }, 60_000)
 
-  it("SPEC-002/AC-8 loop infinito", async () => {
+  it("loop infinito", async () => {
     await boot("def on_idle(elevator):\n    while True:\n        pass\n")
     const started = Date.now()
     const result = await runtime.handle(batch({ type: "idle" }))
@@ -99,7 +99,7 @@ describe("runtime-python", () => {
     expect(await runtime.handle(batch({ type: "idle" }))).toEqual({ commands: [], logs: ["ok"] })
   }, 60_000)
 
-  it("SPEC-002/AC-9 Handler ausente", async () => {
+  it("Handler ausente", async () => {
     await boot("def on_call_button(elevator, floor):\n    pass\n")
     expect(await runtime.handle(batch({ type: "idle" }))).toEqual({ commands: [], logs: [] })
   }, 60_000)
