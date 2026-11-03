@@ -111,9 +111,9 @@ Cenário: erro do aluno para a simulação
 ```
 
 ## Plano
-- [ ] `packages/engine` com Vitest; tipos do §Contratos em `src/types.ts`
-- [ ] máquina de estados do `Elevator`, botões e embarque (AC-2..AC-9)
-- [ ] laço do `Tick` com `Runtime` assíncrono (AC-1, AC-10, AC-11) + testes AC-1..AC-11
+- [x] `packages/engine` com Vitest; tipos do §Contratos em `src/types.ts`
+- [x] máquina de estados do `Elevator`, botões e embarque (AC-2..AC-9)
+- [x] laço do `Tick` com `Runtime` assíncrono (AC-1, AC-10, AC-11) + testes AC-1..AC-11
 
 ## Notas
 - `move_to` fora do prédio: barrado no `Runtime` (SPEC-002); o `Engine` ignora e registra no log.
