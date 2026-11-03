@@ -49,7 +49,12 @@ Título = o `# H1`. Novo doc: copie o `*-000-template.md` da pasta e use o próx
 - ADR: nunca reescreva; decisão nova = ADR novo + `superseded_by` no antigo.
 - Critérios de aceite em **Gherkin** (`Dado/Quando/Então`), 1 cenário por comportamento,
   `# AC-N` na linha acima, resultado observável.
-- Todo teste cita `SPEC-NNN/AC-N`. SPEC só vira `approved` com todos os AC cobertos.
+- Teste não cita `SPEC-NNN/AC-N`: nome descreve o comportamento. SPEC só vira `approved` com todos os AC cobertos por teste.
+
+## Regras de código (valem para `packages/` e `apps/`)
+- **Nada do framework de docs** em código, testes ou nomes de teste: sem `SPEC-`, `AC-`, `RF-`, `RN-`, `ADR-`. A rastreabilidade mora nos docs.
+- **Sem comentários explicativos.** Nome claro e função pequena no lugar. Exceção: docstrings das funções que o aluno chama ou implementa (API do `elevator`, `template.py`).
+- Antes do commit: `grep -rnE "SPEC-|AC-[0-9]|RN-|RF-|ADR-" packages apps --exclude-dir=node_modules` deve voltar vazio.
 - Termo novo entra no glossário antes de ir para doc ou código.
 
 ## Antes do PR

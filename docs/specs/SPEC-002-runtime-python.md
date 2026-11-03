@@ -103,11 +103,11 @@ Cenário: Handler ausente
 ```
 
 ## Plano
-- [ ] `src/worker.ts`: carrega Pyodide (versão fixa, CDN) e responde `load`/`handle` (AC-7)
-- [ ] `src/elevator_api.py`: objeto `elevator`, despacho de `Handler`, captura de `print` (AC-1..AC-6, AC-9)
-- [ ] `src/runtime.ts`: implementa `Runtime`, timeout e recriação do Worker (AC-8)
-- [ ] `src/template.py` exportado para a UI
-- [ ] testes AC-1..AC-9
+- [x] `src/worker.ts`: carrega Pyodide (versão fixa, CDN) e responde `load`/`handle` (AC-7)
+- [x] `src/elevator_api.py`: objeto `elevator`, despacho de `Handler`, captura de `print` (AC-1..AC-6, AC-9)
+- [x] `src/runtime.ts`: implementa `Runtime`, timeout e recriação do Worker (AC-8)
+- [x] `src/template.py` exportado para a UI
+- [x] testes AC-1..AC-9
 
 ## Notas
 - Identificadores em EN (RNF-05); docstrings do template e mensagens de erro em PT (texto para o aluno).
