@@ -1,0 +1,79 @@
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --text: #1c2330;
+  --muted: #667085;
+  --border: #d5d9e0;
+  --accent: #f59e0b;
+  --accent-text: #1c1500;
+  --ok: #15803d;
+  --danger: #b42318;
+  --shaft: #e8ebf0;
+  font-family: system-ui, sans-serif;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12151b;
+    --surface: #1b2029;
+    --text: #e6e9ef;
+    --muted: #98a2b3;
+    --border: #2f3744;
+    --ok: #4ade80;
+    --danger: #f97066;
+    --shaft: #232a36;
+  }
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); }
+button, select { font: inherit; color: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button[aria-pressed="true"], .tabs button[aria-selected="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-text); }
+.muted { color: var(--muted); }
+
+.app { display: flex; flex-direction: column; height: 100vh; min-width: 960px; }
+.controls { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.controls h1 { font-size: 1.05rem; margin: 0 8px 0 0; }
+.speeds { display: flex; gap: 4px; }
+.clock { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.columns { display: flex; flex: 1; min-height: 0; }
+.left { display: flex; flex-direction: column; min-width: 280px; border-right: 1px solid var(--border); }
+.left-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.left-body[hidden] { display: none; }
+.code-editor { flex: 1; min-height: 0; overflow: auto; background: var(--surface); }
+.code-editor .cm-editor { height: 100%; }
+.cm-error-line { background: color-mix(in srgb, var(--danger) 25%, transparent); }
+.restore { align-self: flex-start; margin: 8px; }
+.splitter { width: 6px; cursor: col-resize; background: var(--border); }
+.tabs { display: flex; gap: 4px; padding: 6px 8px 0; }
+.doc { padding: 12px 16px; overflow: auto; }
+.doc dt { margin-top: 8px; }
+.doc dd { margin: 2px 0 0 16px; color: var(--muted); }
+
+.right { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: auto; padding: 10px 14px; gap: 10px; }
+.banner { padding: 8px 12px; border-radius: 6px; border: 1px solid; }
+.banner.error { color: var(--danger); border-color: var(--danger); }
+.banner.success { color: var(--ok); border-color: var(--ok); }
+
+.building { display: flex; gap: 24px; align-items: flex-start; }
+.shaft { position: relative; flex: 1; max-width: 420px; background: var(--shaft); border: 1px solid var(--border); border-radius: 6px; }
+.floor { display: flex; align-items: center; gap: 8px; padding: 0 8px; border-bottom: 1px solid var(--border); }
+.floor:last-of-type { border-bottom: 0; }
+.floor-label { width: 22px; font-weight: 600; }
+.call-button { width: 18px; height: 18px; border-radius: 50%; padding: 0; }
+.lit { background: var(--accent); border-color: var(--accent); color: var(--accent-text); box-shadow: 0 0 6px var(--accent); }
+.waiting { display: flex; gap: 4px; }
+.passenger small { margin-left: 2px; color: var(--muted); }
+.cabin { position: absolute; right: 12px; width: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--surface); border: 2px solid var(--text); border-radius: 4px; font-size: 0.8rem; overflow: hidden; }
+.cabin.doors-open { border-style: dashed; background: color-mix(in srgb, var(--accent) 35%, var(--surface)); }
+.cabin-display { font-weight: 700; }
+.panel { display: grid; grid-template-columns: repeat(2, 44px); gap: 6px; }
+.panel .cabin-button { padding: 6px 0; }
+
+.console { border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
+.log { list-style: none; margin: 0; padding: 8px 12px; height: 150px; overflow: auto; font-family: ui-monospace, monospace; font-size: 0.85rem; }
+.log .error { color: var(--danger); }
+.log-time { color: var(--muted); }
