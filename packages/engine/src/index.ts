@@ -1,4 +1,6 @@
 export * from "./types"
-export type { Scenario } from "./scenario"
+export type { Scenario, ScenarioRules } from "./scenario"
+export { ScenarioError, validateScenario } from "./scenario"
 export { createEngine } from "./engine"
 export type { EngineOptions } from "./engine"
+export { SCENARIOS } from "./scenarios"

@@ -1,4 +1,4 @@
-import type { Scenario } from "./scenario"
+import { assertValidScenario, type ScenarioRules } from "./scenario"
 import {
   DOOR_CYCLE_TICKS,
   FLOOR_TRAVEL_TICKS,
@@ -15,7 +15,7 @@ import {
 
 export type EngineOptions = {
   runtime: Runtime
-  scenario?: Pick<Scenario, "building" | "start_floor" | "passengers">
+  scenario?: ScenarioRules
 }
 
 const SANDBOX = { building: { min_floor: 0, max_floor: 10 }, start_floor: 0, passengers: [] }
@@ -23,7 +23,10 @@ const SANDBOX = { building: { min_floor: 0, max_floor: 10 }, start_floor: 0, pas
 type Pax = { id: string; from: number; to: number; state: "waiting" | "riding" | "arrived" }
 
 export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): Engine {
+  assertValidScenario(scenario)
   const { min_floor, max_floor } = scenario.building
+  const timeLimitTicks =
+    scenario.time_limit_s === undefined ? null : Math.round((scenario.time_limit_s * 1000) / TICK_MS)
 
   let tick = 0
   let status: SimulationState["status"] = "running"
@@ -179,7 +182,24 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
       for (const cmd of result.commands) applyCommand(cmd)
     }
     justOpened = false
-    tick += 1
+    finishScenario()
+    if (status === "running") tick += 1
+  }
+
+  function finishScenario() {
+    if (scenario.passengers.length === 0) return
+    const allArrived =
+      upcoming.length === 0 && passengers.every((p) => p.state === "arrived")
+    if (allArrived) {
+      status = "success"
+      return
+    }
+    if (timeLimitTicks !== null && tick >= timeLimitTicks) {
+      status = "timeout"
+      for (const { id, from, to } of upcoming.splice(0)) {
+        passengers.push({ id, from, to, state: "waiting" })
+      }
+    }
   }
 
   function state(): SimulationState {

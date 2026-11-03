@@ -1,0 +1,12 @@
+{
+  "id": "on-the-way",
+  "title": "Parada no caminho",
+  "description": "A sobe ao 10º andar; no meio da subida, B chama no 5º para ir ao 9º.",
+  "building": { "min_floor": 0, "max_floor": 10 },
+  "start_floor": 0,
+  "time_limit_s": 60,
+  "passengers": [
+    { "id": "A", "at_s": 0, "from": 0, "to": 10 },
+    { "id": "B", "at_s": 4, "from": 5, "to": 9 }
+  ]
+}

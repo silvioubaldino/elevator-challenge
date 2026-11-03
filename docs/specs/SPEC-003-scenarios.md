@@ -73,8 +73,13 @@ Cenário: cenários fixos geram conflito
 ```
 
 ## Plano
-- [ ] `src/scenario.ts`: tipo, validação e injeção de `Passenger` no `Tick` (AC-1, AC-2, AC-5)
-- [ ] fim do `Scenario` no laço do `Engine` (AC-3, AC-4)
-- [ ] `scenarios/first-ride.json`, `on-the-way.json`, `zigzag.json`
-- [ ] controladores de referência em `test/controllers/` (AC-6)
-- [ ] testes AC-1..AC-6
+- [x] `src/scenario.ts`: tipo, validação e injeção de `Passenger` no `Tick` (AC-1, AC-2, AC-5)
+- [x] fim do `Scenario` no laço do `Engine` (AC-3, AC-4)
+- [x] `scenarios/first-ride.json`, `on-the-way.json`, `zigzag.json`
+- [x] controladores de referência em `test/controllers/` (AC-6)
+- [x] testes AC-1..AC-6
+
+## Notas
+- Fim do `Scenario`: `tick` para no instante da chegada (success) ou do limite (timeout); tempo = `tick` × 0,1 s.
+- Em timeout, `Passenger` que nem apareceu entra em `passengers` como `waiting`.
+- Validação roda em `createEngine`; erro é `ScenarioError`.

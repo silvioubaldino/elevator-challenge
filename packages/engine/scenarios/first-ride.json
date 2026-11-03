@@ -1,0 +1,9 @@
+{
+  "id": "first-ride",
+  "title": "Primeira viagem",
+  "description": "Uma pessoa chama o elevador no térreo e quer ir ao 7º andar.",
+  "building": { "min_floor": 0, "max_floor": 10 },
+  "start_floor": 0,
+  "time_limit_s": 30,
+  "passengers": [{ "id": "A", "at_s": 0, "from": 0, "to": 7 }]
+}
