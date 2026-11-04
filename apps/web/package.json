@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@codemirror/lang-python": "^6.2.1",
+    "@codemirror/language": "^6.13.1",
     "@codemirror/state": "^6.5.0",
     "@codemirror/view": "^6.36.0",
+    "@lezer/highlight": "^1.2.5",
     "@elevator/engine": "*",
     "@elevator/runtime-python": "*",
     "codemirror": "^6.0.2",
