@@ -72,6 +72,7 @@ Termo novo entra aqui antes de ser usado em doc ou código. Termo em EN, defini�
 | Idle | Parado, portas fechadas, sem `Target` | Livre |
 | DoorCycle | Abrir, embarcar/desembarcar e fechar | — |
 | Passenger | Pessoa de um `Scenario`: instante, origem, destino | User, pessoa |
+| Avatar | Bonequinho que representa um `Passenger` na UI | Sprite, boneco (no código) |
 | Scenario | Prédio inicial + lista de `Passenger` + `time_limit_s` | Teste, caso |
 | Sandbox | Modo livre: sem `Scenario`, botões clicados à mão | Playground |
 | Tick | Passo de 100 ms de tempo simulado | Frame |

@@ -132,6 +132,19 @@ describe("cenário", () => {
     expect(screen.getByText(/0 a bordo/)).toBeInTheDocument()
   })
 
+  it("o passageiro tem o mesmo avatar depois de reiniciar", async () => {
+    const { clock } = renderApp()
+    await choose("Parada no caminho")
+    await userEvent.click(button(/Rodar/))
+    await clock.advance(200)
+    const first = screen.getByTestId("avatar-A").getAttribute("data-look")
+
+    await userEvent.click(button(/Reiniciar/))
+    await userEvent.click(button(/Rodar/))
+    await clock.advance(200)
+    expect(screen.getByTestId("avatar-A").getAttribute("data-look")).toBe(first)
+  })
+
   it("mostra o tempo total ao concluir", async () => {
     const { clock } = renderApp()
     await choose("Parada no caminho")
