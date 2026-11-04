@@ -21,13 +21,20 @@ export function useCompactLayout() {
   return compact
 }
 
+const KEYBOARD_MIN_PX = 120
+
 export function useVisibleViewportHeight() {
   useEffect(() => {
     const viewport = window.visualViewport
     if (!viewport) return
     const root = document.documentElement
+    const clear = () => {
+      root.style.removeProperty("--app-height")
+      root.style.removeProperty("--app-top")
+    }
     const update = () => {
-      if (Math.abs(viewport.scale - 1) > 0.01) return
+      const keyboardOpen = window.innerHeight - viewport.height > KEYBOARD_MIN_PX
+      if (!keyboardOpen || Math.abs(viewport.scale - 1) > 0.01) return clear()
       root.style.setProperty("--app-height", `${viewport.height}px`)
       root.style.setProperty("--app-top", `${viewport.offsetTop}px`)
     }
@@ -37,8 +44,7 @@ export function useVisibleViewportHeight() {
     return () => {
       viewport.removeEventListener("resize", update)
       viewport.removeEventListener("scroll", update)
-      root.style.removeProperty("--app-height")
-      root.style.removeProperty("--app-top")
+      clear()
     }
   }, [])
 }

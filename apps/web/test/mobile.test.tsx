@@ -103,3 +103,41 @@ describe("layout de computador", () => {
     expect(button(/Pausar/)).toBeDisabled()
   })
 })
+
+describe("área visível com o teclado", () => {
+  const root = document.documentElement
+  const appTop = () => root.style.getPropertyValue("--app-top")
+  const appHeight = () => root.style.getPropertyValue("--app-height")
+
+  function stubViewport(visibleHeight: number) {
+    const viewport = Object.assign(new EventTarget(), { height: visibleHeight, offsetTop: 40, scale: 1 })
+    vi.stubGlobal("visualViewport", viewport)
+    vi.stubGlobal("innerHeight", 800)
+    return viewport
+  }
+
+  it("não reposiciona o app enquanto o teclado está fechado, mesmo com a página quicando", () => {
+    const viewport = stubViewport(800)
+    renderApp()
+    act(() => {
+      viewport.offsetTop = -60
+      viewport.dispatchEvent(new Event("scroll"))
+    })
+    expect(appTop()).toBe("")
+    expect(appHeight()).toBe("")
+  })
+
+  it("acompanha a área visível com o teclado aberto e solta ao fechar", () => {
+    const viewport = stubViewport(480)
+    renderApp()
+    expect(appHeight()).toBe("480px")
+    expect(appTop()).toBe("40px")
+
+    act(() => {
+      viewport.height = 800
+      viewport.dispatchEvent(new Event("resize"))
+    })
+    expect(appHeight()).toBe("")
+    expect(appTop()).toBe("")
+  })
+})
