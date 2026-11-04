@@ -4,6 +4,7 @@ import type { Phase, Speed } from "../simulation"
 
 const SPEEDS: Speed[] = [1, 2, 4]
 export const FREE_MODE = "sandbox"
+export const CUSTOM_MODE = "custom"
 
 type Props = {
   phase: Phase
@@ -32,6 +33,7 @@ export function Controls(props: Props) {
         onChange={(e) => props.onScenario(e.target.value)}
       >
         <option value={FREE_MODE}>{t.freeMode}</option>
+        <option value={CUSTOM_MODE}>{t.customMode}</option>
         {SCENARIOS.map((s) => (
           <option key={s.id} value={s.id}>
             {s.title}

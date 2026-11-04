@@ -5,10 +5,12 @@ import { ApiReference } from "./components/ApiReference"
 import { Building } from "./components/building/Building"
 import { CodeEditor } from "./components/CodeEditor"
 import { Console } from "./components/Console"
-import { Controls, FREE_MODE } from "./components/Controls"
+import { Controls, CUSTOM_MODE, FREE_MODE } from "./components/Controls"
+import { ScenarioEditor } from "./components/ScenarioEditor"
+import { initialCustomScenario, toScenario, type CustomScenario } from "./customScenario"
 import { t } from "./i18n/pt-BR"
 import { createSimulation, type Clock, type Simulation, type Speed } from "./simulation"
-import { loadSavedCode, saveCode } from "./storage"
+import { loadCustomScenario, loadSavedCode, saveCode, saveCustomScenario } from "./storage"
 
 type LeftTab = "code" | "statement" | "api"
 type PythonStatus = "loading" | "ready" | "failed"
@@ -23,6 +25,7 @@ const MIN_LEFT_PX = 280
 export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
   const [code, setCode] = useState(() => loadSavedCode() ?? TEMPLATE)
   const [scenarioId, setScenarioId] = useState(FREE_MODE)
+  const [custom, setCustom] = useState<CustomScenario>(() => loadCustomScenario() ?? initialCustomScenario())
   const [speed, setSpeed] = useState<Speed>(1)
   const [leftTab, setLeftTab] = useState<LeftTab>("code")
   const [leftWidth, setLeftWidth] = useState(520)
@@ -60,7 +63,18 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
 
   const chooseScenario = (id: string) => {
     setScenarioId(id)
+    if (id === CUSTOM_MODE) {
+      setLeftTab("statement")
+      simulation.select(toScenario(custom))
+      return
+    }
     simulation.select(SCENARIOS.find((s) => s.id === id) ?? null)
+  }
+
+  const editCustom = (next: CustomScenario) => {
+    setCustom(next)
+    saveCustomScenario(next)
+    simulation.select(toScenario(next))
   }
 
   const chooseSpeed = (next: Speed) => {
@@ -82,6 +96,8 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
   }
 
   const { state, scenario, phase } = view
+  const editingScenario = scenarioId === CUSTOM_MODE
+  const scenarioLocked = phase === "running" || phase === "paused"
   const error = state.error
   const errorLine = error?.line ?? null
   const notArrived = state.passengers.filter((p) => p.state !== "arrived").map((p) => p.id)
@@ -112,7 +128,7 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
                 aria-selected={leftTab === id}
                 onClick={() => setLeftTab(id)}
               >
-                {t.tabs[id]}
+                {id === "statement" && editingScenario ? t.tabs.scenario : t.tabs[id]}
               </button>
             ))}
           </div>
@@ -122,7 +138,12 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
               {t.restoreTemplate}
             </button>
           </div>
-          {leftTab === "statement" && (
+          {leftTab === "statement" && editingScenario && (
+            <div role="tabpanel">
+              <ScenarioEditor value={custom} locked={scenarioLocked} onChange={editCustom} />
+            </div>
+          )}
+          {leftTab === "statement" && !editingScenario && (
             <div className="doc" role="tabpanel">
               <h2>{scenario?.title ?? t.freeMode}</h2>
               <p>{scenario?.description ?? t.freeModeStatement}</p>

@@ -6,7 +6,7 @@ on release, `## Unreleased` becomes `## [dd-MM-yyyy - vX.Y.Z]`.
 
 ## Unreleased
 
-- Plano do editor de `Scenario` ("Meu cenário") e termo `CustomScenario` no glossário (SPEC-006, draft).
+- `apps/web`: modo "Meu cenário" com painel para montar a lista de `Passenger` (instante, origem, destino), congelado durante a execução (SPEC-006, AC-1..AC-9).
 - Docs framework and Phase 1 (MVP) requirements, decisions and specs.
 - `packages/engine`: simulador do `Elevator` e laço de `Tick` com `Runtime` (SPEC-001, AC-1..AC-11). [#1](https://github.com/silvioubaldino/elevator-challenge/pull/1)
 - `packages/runtime-python`: `Runtime` em Python via Pyodide num Web Worker, com `template.py` e timeout (SPEC-002, AC-1..AC-9).

@@ -19,8 +19,8 @@ related: [SPEC-003, SPEC-004, SPEC-005, RNF-04]
 ```
 ┌ Cenário ─────────────────────────────────────────────┐
 │ Limite de tempo [ 120 ] s                            │
-│ 🧍 A  Aparece em [ 0,0 ] s  De [ T ▾]  Para [ 5 ▾]  ✕ │
-│ 🧍 B  Aparece em [ 2,0 ] s  De [ 3 ▾]  Para [ T ▾]  ✕ │
+│ 🧍 A  Aparece em [ 0 ] s  De [ T ▾]  Para [ 5 ▾]  ✕ │
+│ 🧍 B  Aparece em [ 2 ] s  De [ 3 ▾]  Para [ T ▾]  ✕ │
 │ [ + Adicionar pessoa ]                               │
 └──────────────────────────────────────────────────────┘
 ```
@@ -34,7 +34,7 @@ related: [SPEC-003, SPEC-004, SPEC-005, RNF-04]
   - Painel desabilitado (`fieldset disabled`) com fase `running` ou `paused`.
   - Em `ready` e `finished`, editar chama `simulation.select(custom)`: volta o estado inicial.
   - `CallButton` e `CabinButton` do prédio desabilitados em "Meu cenário", como nos cenários fixos.
-- **Validação:** `validateScenario` do `Engine`; mensagem em PT abaixo da lista e "Rodar" desabilitado se inválido.
+- **Validade por construção:** campos só geram `Scenario` válido (SPEC-003); limite ≥ 1 s e reduzi-lo puxa `at_s` maiores para o limite.
 - **Persistência:** `localStorage` (`elevator-challenge:custom-scenario`), com `try/catch`; dado salvo inválido → cenário inicial.
 
 ## Critérios de aceite
@@ -44,13 +44,13 @@ Testes com Testing Library.
 Cenário: entrar em Meu cenário
   Dado um navegador sem dados salvos
   Quando o aluno escolhe "Meu cenário"
-  Então a aba Cenário abre com uma linha: Avatar de A, 0,0 s, de T para 5, e limite 120 s
+  Então a aba Cenário abre com uma linha: Avatar de A, 0 s, de T para 5, e limite 120 s
 
 # AC-2
 Cenário: adicionar pessoa
-  Dado o painel com a pessoa A em 0,0 s
+  Dado o painel com a pessoa A em 0 s
   Quando o aluno clica "Adicionar pessoa"
-  Então aparece a linha B com Avatar próprio, 2,0 s, de T para 5
+  Então aparece a linha B com Avatar próprio, 2 s, de T para 5
 
 # AC-3
 Cenário: remover pessoa
@@ -66,9 +66,9 @@ Cenário: origem e destino nunca iguais
 
 # AC-5
 Cenário: rodar o cenário montado
-  Dado B aparecendo em 3,0 s no 6 indo para T
+  Dado B aparecendo em 3 s no 6 indo para T
   Quando o aluno clica Rodar
-  Então em 3,0 s o Avatar de B espera no 6 e a aba Eventos mostra call_button(6)
+  Então em 3 s o Avatar de B espera no 6 e a aba Eventos mostra call_button(6)
 
 # AC-6
 Cenário: painel congelado durante a execução
@@ -96,14 +96,14 @@ Cenário: cenário salvo no navegador
 ```
 
 ## Plano
-- [ ] glossário: `CustomScenario` em `docs/requirements.md`
-- [ ] `src/customScenario.ts`: inicial, adicionar, remover, editar campo, troca De/Para, `toScenario` (AC-1..AC-4)
-- [ ] `src/storage.ts`: `loadCustomScenario` / `saveCustomScenario` (AC-9)
-- [ ] `components/ScenarioEditor.tsx` + linha com `AvatarFigure` (AC-1..AC-4, AC-6)
-- [ ] `Controls.tsx`: opção `CUSTOM_MODE`; `App.tsx`: aba Cenário, congelamento, reset ao editar (AC-5..AC-8)
-- [ ] textos em `i18n/pt-BR.ts`; estilos em `styles.css`
-- [ ] `docs/architecture.md`: SPEC-006 na linha de `apps/web`
-- [ ] testes AC-1..AC-9
+- [x] glossário: `CustomScenario` em `docs/requirements.md`
+- [x] `src/customScenario.ts`: inicial, adicionar, remover, editar campo, troca De/Para, `toScenario` (AC-1..AC-4)
+- [x] `src/storage.ts`: `loadCustomScenario` / `saveCustomScenario` (AC-9)
+- [x] `components/ScenarioEditor.tsx` + linha com `AvatarFigure` (AC-1..AC-4, AC-6)
+- [x] `Controls.tsx`: opção `CUSTOM_MODE`; `App.tsx`: aba Cenário, congelamento, reset ao editar (AC-5..AC-8)
+- [x] textos em `i18n/pt-BR.ts`; estilos em `styles.css`
+- [x] `docs/architecture.md`: SPEC-006 na linha de `apps/web`
+- [x] testes AC-1..AC-9
 
 ## Notas
 - Sem §Contratos: reusa `Scenario` (SPEC-003); `Engine` e `Runtime` não mudam.
