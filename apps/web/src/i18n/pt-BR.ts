@@ -63,7 +63,7 @@ export const t = {
       ["is_idle()", "True se parado, de portas fechadas e sem destino."],
       ["min_floor() / max_floor()", "Limites do prédio."],
     ],
-  },
+  } as const,
   floorLabel: (floor: number) => (floor === 0 ? "T" : floor < 0 ? `S${-floor}` : String(floor)),
   seconds: (ticks: number) => (ticks / 10).toFixed(1).replace(".", ","),
   directionArrow: { up: "▲", down: "▼", none: "·" },

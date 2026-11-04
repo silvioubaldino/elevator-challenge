@@ -83,6 +83,13 @@ Cenário: textos em PT
   Dado qualquer tela
   Quando o aluno a vê
   Então rótulos, avisos e enunciados estão em PT-BR e o térreo aparece como T
+
+# AC-10
+Cenário: autocomplete da API
+  Dado o editor com o código do aluno
+  Quando o aluno digita "elevator." ou "on_" no início de uma linha
+  Então o editor sugere as funções do elevator ou os Handler da API, com descrição em PT
+  E escolher um Handler insere "def" com a assinatura e o corpo
 ```
 
 ## Plano
@@ -92,7 +99,8 @@ Cenário: textos em PT
 - [x] editor CodeMirror + persistência em `localStorage` com `try/catch` (AC-1, AC-8)
 - [x] console, aviso de erro e de resultado (AC-6, AC-7)
 - [x] textos em `src/i18n/pt-BR.ts` (AC-9)
-- [x] testes AC-1..AC-9
+- [x] autocomplete das funções do `elevator` e dos `Handler` no editor (AC-10)
+- [x] testes AC-1..AC-10
 
 ## Notas
 - O laço de execução deve ser não-bloqueante (`step()` é assíncrono): a animação interpola `position`.
