@@ -33,7 +33,8 @@ related: [SPEC-004, SPEC-006, RNF-06]
   - com o editor focado, controles e navegação somem e aparece a **barra de atalhos**: `⇥` `⇤` `:` `(` `)` `_` `.` `=` `"` `[` `]` `,` `#` e **Pronto** (fecha o teclado);
   - tocar num atalho não tira o foco do editor; indentação de 4 espaços (igual ao template).
 - **Toque:** alvos ≥ 40 px; `CallButton` com área de toque maior que o desenho; sem zoom por toque duplo.
-- **Teclado virtual:** a altura do app segue a área visível (`visualViewport`); respeita áreas seguras do aparelho.
+- **Rolagem:** a página nunca rola nem quica; cada seção rola por dentro e não repassa o gesto à página (sem puxar para recarregar).
+- **Teclado virtual:** só com o teclado aberto a altura do app segue a área visível (`visualViewport`); fechado, o app não se mexe. Respeita áreas seguras do aparelho.
 
 ## Critérios de aceite
 Testes com Testing Library (`matchMedia` simulado); visual conferido com Playwright em 360, 390 e paisagem.
@@ -73,6 +74,12 @@ Cenário: computador sem mudanças
   Dado o site aberto numa tela com 900 px ou mais
   Quando o aluno o vê
   Então código e prédio aparecem lado a lado, sem navegação inferior nem barra de atalhos
+
+# AC-7
+Cenário: teclado fechado não move o app
+  Dado o site aberto num celular com o teclado fechado
+  Quando a página quica ao arrastar o dedo (o `visualViewport` muda)
+  Então o app não é reposicionado; com o teclado aberto, ele acompanha a área visível
 ```
 
 ## Plano
@@ -81,9 +88,11 @@ Cenário: computador sem mudanças
 - [x] `components/Controls.tsx`: topo, controles e relógio em áreas separadas do grid; Rodar/Pausar alternado (AC-3)
 - [x] `components/CodeEditor.tsx`: barra de atalhos, quebra de linha, `reveal(line)`, indentação 4 (AC-4, AC-5)
 - [x] `styles.css`: grid por áreas, `@media (max-width: 899px)` e paisagem; `index.html`: `viewport-fit`, `interactive-widget`
-- [x] testes AC-1..AC-6
+- [x] seções como containers de rolagem; página travada (`overscroll-behavior`, `body` fixo) (AC-7)
+- [x] testes AC-1..AC-7
 
 ## Notas
 - Sem §Contratos: só UI; `Engine` e `Runtime` não mudam.
 - Abas do desktop e navegação inferior não coexistem no DOM: a escolha é por `matchMedia`, não só CSS.
 - iOS não encolhe o layout com o teclado; por isso `--app-height` vem do `visualViewport` (ignorado com zoom de pinça).
+- Copiar `offsetTop` do `visualViewport` com o teclado fechado fazia o app andar com o efeito elástico da página; hoje só vale com o teclado aberto.

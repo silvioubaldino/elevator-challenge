@@ -6,6 +6,7 @@ on release, `## Unreleased` becomes `## [dd-MM-yyyy - vX.Y.Z]`.
 
 ## Unreleased
 
+- `apps/web`: corrige a rolagem no celular: cada seção rola por dentro e a página não quica nem recarrega ao arrastar o dedo (SPEC-007, AC-7).
 - `apps/web`: layout para celular com uma seção por vez, navegação inferior, Rodar levando ao prédio, "Ver linha N" no erro e barra de atalhos no editor (SPEC-007, AC-1..AC-6).
 - `apps/web`: autocomplete no editor para as funções do `elevator` e para os `Handler`, com descrição em PT (SPEC-004, AC-10).
 - `apps/web`: editor de código com tema VS Code Dark+ (cores, realce de sintaxe, linha ativa e seleção).
