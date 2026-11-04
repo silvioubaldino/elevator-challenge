@@ -6,6 +6,7 @@ on release, `## Unreleased` becomes `## [dd-MM-yyyy - vX.Y.Z]`.
 
 ## Unreleased
 
+- `apps/web`: autocomplete no editor para as funções do `elevator` e para os `Handler`, com descrição em PT (SPEC-004, AC-10).
 - `apps/web`: editor de código com tema VS Code Dark+ (cores, realce de sintaxe, linha ativa e seleção).
 - `apps/web`: modo "Meu cenário" com painel para montar a lista de `Passenger` (instante, origem, destino), congelado durante a execução (SPEC-006, AC-1..AC-9).
 - Docs framework and Phase 1 (MVP) requirements, decisions and specs.

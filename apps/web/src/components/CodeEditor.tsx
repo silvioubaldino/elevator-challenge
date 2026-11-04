@@ -1,8 +1,9 @@
-import { python } from "@codemirror/lang-python"
+import { python, pythonLanguage } from "@codemirror/lang-python"
 import { StateEffect, StateField } from "@codemirror/state"
 import { Decoration, EditorView } from "@codemirror/view"
 import { basicSetup } from "codemirror"
 import { useEffect, useRef } from "react"
+import { elevatorCompletions } from "./elevatorCompletions"
 import { vscodeDark } from "./vscodeDarkTheme"
 
 const setErrorLine = StateEffect.define<number | null>()
@@ -45,6 +46,7 @@ export function CodeEditor({ value, errorLine, onChange }: Props) {
       extensions: [
         basicSetup,
         python(),
+        pythonLanguage.data.of({ autocomplete: elevatorCompletions }),
         vscodeDark,
         errorLineField,
         EditorView.updateListener.of((update) => {
