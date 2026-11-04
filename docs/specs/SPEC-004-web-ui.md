@@ -8,7 +8,7 @@ related: [SPEC-001, SPEC-002, SPEC-003, RNF-05, RNF-06]
 # SPEC-004: Web UI — editor, prédio animado e controles
 
 **Escopo:** tela única que liga editor, `Engine` e `Runtime`. **Módulo:** `apps/web`.
-**Fora:** editor de `Scenario` (RF-10), métricas (RF-11), mobile.
+**Fora:** editor de `Scenario` (RF-10), métricas (RF-11), celular (SPEC-007).
 
 ## Layout
 ```
