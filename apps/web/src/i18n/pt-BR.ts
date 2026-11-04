@@ -21,6 +21,9 @@ export const t = {
   cabinPanel: "Painel da cabine",
   onBoard: (count: number) => `${count} a bordo`,
   waiting: (id: string, to: string) => `Passageiro ${id} esperando, vai para ${to}`,
+  riding: (id: string, to: string) => `Passageiro ${id} a bordo, vai para ${to}`,
+  buildingName: "Edifício Tic-Tac",
+  reception: "RECEPÇÃO",
   emptyOutput: "Nada impresso ainda.",
   emptyEvents: "Nenhum evento ainda.",
   errorTitle: "Erro no seu código",
@@ -49,5 +52,5 @@ export const t = {
   },
   floorLabel: (floor: number) => (floor === 0 ? "T" : floor < 0 ? `S${-floor}` : String(floor)),
   seconds: (ticks: number) => (ticks / 10).toFixed(1).replace(".", ","),
-  directionArrow: { up: "↑", down: "↓", none: "•" },
+  directionArrow: { up: "▲", down: "▼", none: "·" },
 }

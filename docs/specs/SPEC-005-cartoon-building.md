@@ -45,7 +45,7 @@ Cenário: Avatar estável por id
 Cenário: Avatar esperando com destino
   Dado o Scenario on-the-way rodando
   Quando B aparece no 5
-  Então há um Avatar de B no 5 com o balão "→ 9" e nome acessível "B esperando, vai para 9"
+  Então há um Avatar de B no 5 com o balão "→ 9" e nome acessível "Passageiro B esperando, vai para 9"
 
 # AC-3
 Cenário: humor pela espera
@@ -85,16 +85,18 @@ Cenário: comportamento de SPEC-004 preservado
 ```
 
 ## Plano
-- [ ] tokens de tema em `styles.css` (claro + noite) e fonte arredondada (AC-6)
-- [ ] `components/building/` quebrado em `Shaft`, `Cabin`, `FloorRoom`, `CallButton`, `CabinPanel` (AC-6, AC-8)
-- [ ] `components/avatar/`: partes SVG + `avatarFromId(id)` puro (AC-1)
-- [ ] `useAvatarTransitions`: detecta `waiting→riding` e `riding→arrived` entre snapshots e anima (AC-4, AC-7)
-- [ ] humor por tempo de espera (`time` − instante do `Passenger`) (AC-3)
-- [ ] janela da cabine com até 4 `Avatar` + selo (AC-5)
-- [ ] testes AC-1..AC-8
+- [x] tokens de tema em `styles.css` (claro + noite) e fonte Fredoka (AC-6)
+- [x] `components/building/`: `Building`, `CabinPanel`, `AvatarLayer`, `scenery`, `geometry` (AC-6, AC-8)
+- [x] `components/avatar/`: `AvatarFigure` em SVG + `avatarFromId(id)` puro (AC-1)
+- [x] `placeAvatars` (pura) + transição de caminhada quando o estado do `Passenger` muda (AC-4, AC-7)
+- [x] humor por tempo de espera (`tick` − `at_s`) (AC-3)
+- [x] janela da cabine com até 4 `Avatar` + selo (AC-5)
+- [x] testes AC-1..AC-8
 
 ## Notas
-- Tudo em SVG + CSS, sem lib 3D (three.js) nem assets externos: bundle leve, testável em jsdom, sem custo (RNF-02). Se quiser 3D real depois → ADR.
+- Tudo em SVG + CSS, sem lib 3D (three.js) nem imagens externas: bundle leve, testável em jsdom, sem custo (RNF-02). Se quiser 3D real depois → ADR.
+- Fonte Fredoka via Google Fonts; sem ela, cai em fonte do sistema.
+- `CallButton` são `<button>` HTML sobre o SVG (posição em %), para manter teclado e `disabled`.
 - Limiares de humor sugeridos: neutro ≥ 15 s, impaciente ≥ 30 s; só visual, não é nota.
 - `Modo livre` não tem `Passenger`, logo não tem `Avatar`.
 - Ilustração dos cômodos é decorativa: `aria-hidden`; só botões e `Avatar` têm nome acessível.
