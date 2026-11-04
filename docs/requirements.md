@@ -74,6 +74,7 @@ Termo novo entra aqui antes de ser usado em doc ou código. Termo em EN, defini�
 | Passenger | Pessoa de um `Scenario`: instante, origem, destino | User, pessoa |
 | Avatar | Bonequinho que representa um `Passenger` na UI | Sprite, boneco (no código) |
 | Scenario | Prédio inicial + lista de `Passenger` + `time_limit_s` | Teste, caso |
+| CustomScenario | `Scenario` montado pelo aluno no editor ("Meu cenário") | Cenário livre (confunde com `Sandbox`) |
 | Sandbox | Modo livre: sem `Scenario`, botões clicados à mão | Playground |
 | Tick | Passo de 100 ms de tempo simulado | Frame |
 | Event | Fato que o `Engine` entrega ao aluno | Callback |
