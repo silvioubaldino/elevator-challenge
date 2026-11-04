@@ -35,7 +35,7 @@ status: draft
 | RNF-03 | Isolamento: código do aluno roda fora da thread da UI; loop infinito não trava a página |
 | RNF-04 | Determinismo: mesmo código + mesmo `Scenario` = mesma execução, em qualquer velocidade |
 | RNF-05 | Idioma: UI em PT-BR; código, API, campos e enums em EN |
-| RNF-06 | Layout: desktop-first (≥ 1280 px), legível em tablet |
+| RNF-06 | Layout: desktop-first (≥ 1280 px), legível em tablet, usável em celular (≥ 360 px) |
 | RNF-07 | Extensível: o `Engine` não conhece a linguagem do aluno; cada linguagem é um `Runtime` (prepara RF-16) |
 
 ## Regras do simulador

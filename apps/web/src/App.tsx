@@ -3,16 +3,18 @@ import { createPythonRuntime, TEMPLATE, type PythonRuntime } from "@elevator/run
 import { useCallback, useEffect, useRef, useState } from "react"
 import { ApiReference } from "./components/ApiReference"
 import { Building } from "./components/building/Building"
-import { CodeEditor } from "./components/CodeEditor"
+import { CodeEditor, type CodeEditorHandle } from "./components/CodeEditor"
 import { Console } from "./components/Console"
 import { Controls, CUSTOM_MODE, FREE_MODE } from "./components/Controls"
+import { SectionNav } from "./components/SectionNav"
 import { ScenarioEditor } from "./components/ScenarioEditor"
 import { initialCustomScenario, toScenario, type CustomScenario } from "./customScenario"
 import { t } from "./i18n/pt-BR"
 import { createSimulation, type Clock, type Simulation, type Speed } from "./simulation"
 import { loadCustomScenario, loadSavedCode, saveCode, saveCustomScenario } from "./storage"
+import { useCompactLayout, useVisibleViewportHeight } from "./viewport"
 
-type LeftTab = "code" | "statement" | "api"
+export type LeftTab = "code" | "statement" | "api"
 type PythonStatus = "loading" | "ready" | "failed"
 
 export type AppProps = {
@@ -29,6 +31,11 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
   const [speed, setSpeed] = useState<Speed>(1)
   const [leftTab, setLeftTab] = useState<LeftTab>("code")
   const [leftWidth, setLeftWidth] = useState(520)
+  const [showBuilding, setShowBuilding] = useState(true)
+  const [revealLine, setRevealLine] = useState<number | null>(null)
+  const compact = useCompactLayout()
+  useVisibleViewportHeight()
+  const editorRef = useRef<CodeEditorHandle>(null)
   const [python, setPython] = useState<PythonStatus>("loading")
   const runtimeRef = useRef<PythonRuntime | null>(null)
   const simulationRef = useRef<Simulation | null>(null)
@@ -52,6 +59,17 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
     return () => simulation.dispose()
   }, [simulation])
 
+  useEffect(() => {
+    if (revealLine === null) return
+    editorRef.current?.reveal(revealLine)
+    setRevealLine(null)
+  }, [revealLine])
+
+  const openLeftTab = (tab: LeftTab) => {
+    setLeftTab(tab)
+    setShowBuilding(false)
+  }
+
   const updateCode = useCallback((next: string) => {
     setCode(next)
     saveCode(next)
@@ -64,7 +82,7 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
   const chooseScenario = (id: string) => {
     setScenarioId(id)
     if (id === CUSTOM_MODE) {
-      setLeftTab("statement")
+      openLeftTab("statement")
       simulation.select(toScenario(custom))
       return
     }
@@ -75,6 +93,16 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
     setCustom(next)
     saveCustomScenario(next)
     simulation.select(toScenario(next))
+  }
+
+  const run = () => {
+    setShowBuilding(true)
+    void simulation.run(code)
+  }
+
+  const showErrorLine = (line: number) => {
+    openLeftTab("code")
+    setRevealLine(line)
   }
 
   const chooseSpeed = (next: Speed) => {
@@ -101,39 +129,49 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
   const error = state.error
   const errorLine = error?.line ?? null
   const notArrived = state.passengers.filter((p) => p.state !== "arrived").map((p) => p.id)
+  const statementLabel = editingScenario ? t.tabs.scenario : t.tabs.statement
 
   return (
-    <div className="app">
+    <div className={`app${compact ? " compact" : ""}`}>
       <Controls
         phase={phase}
         pythonReady={python === "ready"}
         pythonFailed={python === "failed"}
         scenarioId={scenarioId}
+        compact={compact}
         speed={speed}
         tick={state.tick}
         onScenario={chooseScenario}
-        onRun={() => void simulation.run(code)}
+        onRun={run}
         onPause={() => simulation.pause()}
         onRestart={() => simulation.restart()}
         onSpeed={chooseSpeed}
       />
       <main className="columns">
-        <section className="left" style={{ width: leftWidth }}>
-          <div role="tablist" className="tabs">
-            {(["code", "statement", "api"] as const).map((id) => (
-              <button
-                key={id}
-                role="tab"
-                type="button"
-                aria-selected={leftTab === id}
-                onClick={() => setLeftTab(id)}
-              >
-                {id === "statement" && editingScenario ? t.tabs.scenario : t.tabs[id]}
-              </button>
-            ))}
-          </div>
+        <section className="left" style={compact ? undefined : { width: leftWidth }} hidden={compact && showBuilding}>
+          {!compact && (
+            <div role="tablist" className="tabs">
+              {(["code", "statement", "api"] as const).map((id) => (
+                <button
+                  key={id}
+                  role="tab"
+                  type="button"
+                  aria-selected={leftTab === id}
+                  onClick={() => setLeftTab(id)}
+                >
+                  {id === "statement" ? statementLabel : t.tabs[id]}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="left-body" hidden={leftTab !== "code"}>
-            <CodeEditor value={code} errorLine={errorLine} onChange={updateCode} />
+            <CodeEditor
+              value={code}
+              errorLine={errorLine}
+              compact={compact}
+              handle={editorRef}
+              onChange={updateCode}
+            />
             <button type="button" className="restore" onClick={restoreTemplate}>
               {t.restoreTemplate}
             </button>
@@ -155,12 +193,21 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
             </div>
           )}
         </section>
-        <div className="splitter" role="separator" aria-orientation="vertical" onPointerDown={startDrag} />
-        <section className="right">
+        {!compact && (
+          <div className="splitter" role="separator" aria-orientation="vertical" onPointerDown={startDrag} />
+        )}
+        <section className="right" hidden={compact && !showBuilding}>
           {error && (
             <div className="banner error" role="alert">
-              <strong>{t.errorTitle}</strong>: {error.message}
-              {errorLine !== null && <> ({t.errorAtLine(errorLine)})</>}
+              <span>
+                <strong>{t.errorTitle}</strong>: {error.message}
+                {errorLine !== null && <> ({t.errorAtLine(errorLine)})</>}
+              </span>
+              {errorLine !== null && (
+                <button type="button" onClick={() => showErrorLine(errorLine)}>
+                  {t.showLine(errorLine)}
+                </button>
+              )}
             </div>
           )}
           {state.status === "success" && (
@@ -183,6 +230,15 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
           <Console log={state.log} />
         </section>
       </main>
+      {compact && (
+        <SectionNav
+          showBuilding={showBuilding}
+          leftTab={leftTab}
+          statementLabel={statementLabel}
+          onBuilding={() => setShowBuilding(true)}
+          onLeftTab={openLeftTab}
+        />
+      )}
     </div>
   )
 }

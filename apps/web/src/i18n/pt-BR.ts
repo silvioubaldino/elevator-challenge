@@ -14,7 +14,10 @@ export const t = {
   scenarioLabel: "Cenário",
   speedLabel: "Velocidade",
   clockLabel: "Tempo simulado",
-  tabs: { code: "Código", statement: "Enunciado", scenario: "Cenário", api: "API" },
+  tabs: { building: "Prédio", code: "Código", statement: "Enunciado", scenario: "Cenário", api: "API" },
+  sectionsLabel: "Seções",
+  symbolBar: { label: "Símbolos de código", indent: "Indentar", dedent: "Desindentar", done: "Pronto" },
+  showLine: (line: number) => `Ver linha ${line}`,
   scenarioEditor: {
     timeLimit: "Limite de tempo (s)",
     passengers: "Passageiros do cenário",

@@ -22,6 +22,6 @@ Tudo roda no navegador; o site é estático (GitHub Pages).
 |--------|-------|------|
 | `packages/engine` | Tempo (`Tick`), regras RN-*, `Scenario`; sem DOM, sem linguagem | SPEC-001, SPEC-003 |
 | `packages/runtime-python` | Carrega Pyodide num Worker, expõe a API do aluno, aplica timeout | SPEC-002 |
-| `apps/web` | Editor, prédio animado, controles, console, editor de `Scenario`; persiste código e cenário | SPEC-004, SPEC-005, SPEC-006 |
+| `apps/web` | Editor, prédio animado, controles, console, editor de `Scenario`; persiste código e cenário | SPEC-004, SPEC-005, SPEC-006, SPEC-007 |
 
 Dependências só no sentido `web → engine` e `web → runtime-python → engine` (tipos). `engine` não importa ninguém.
