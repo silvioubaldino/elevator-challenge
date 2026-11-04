@@ -86,14 +86,14 @@ Cenário: textos em PT
 ```
 
 ## Plano
-- [ ] `apps/web` (Vite + React), layout em duas colunas redimensionáveis
-- [ ] `Building` em SVG/CSS animado a partir de `SimulationState` (AC-4, AC-5)
-- [ ] laço de execução: `step()` por `requestAnimationFrame` × velocidade (AC-2, AC-3)
-- [ ] editor CodeMirror + persistência em `localStorage` com `try/catch` (AC-1, AC-8)
-- [ ] console, aviso de erro e de resultado (AC-6, AC-7)
-- [ ] textos em `src/i18n/pt-BR.ts` (AC-9)
-- [ ] testes AC-1..AC-9
+- [x] `apps/web` (Vite + React), layout em duas colunas redimensionáveis
+- [x] `Building` em SVG/CSS animado a partir de `SimulationState` (AC-4, AC-5)
+- [x] laço de execução: `step()` por `requestAnimationFrame` × velocidade (AC-2, AC-3)
+- [x] editor CodeMirror + persistência em `localStorage` com `try/catch` (AC-1, AC-8)
+- [x] console, aviso de erro e de resultado (AC-6, AC-7)
+- [x] textos em `src/i18n/pt-BR.ts` (AC-9)
+- [x] testes AC-1..AC-9
 
 ## Notas
 - O laço de execução deve ser não-bloqueante (`step()` é assíncrono): a animação interpola `position`.
-- Workflow de deploy no GitHub Pages entra junto com esta SPEC (ADR-001).
+- Deploy no GitHub Pages: `.github/workflows/deploy.yml` (ADR-001).
