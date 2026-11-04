@@ -56,9 +56,9 @@ button[aria-pressed="true"], .tabs button[aria-selected="true"] { border-color: 
 .left { display: flex; flex-direction: column; min-width: 280px; border-right: 1px solid var(--border); }
 .left-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .left-body[hidden] { display: none; }
-.code-editor { flex: 1; min-height: 0; overflow: auto; background: var(--surface); }
-.code-editor .cm-editor { height: 100%; }
-.cm-error-line { background: color-mix(in srgb, var(--danger) 25%, transparent); }
+.code-editor { flex: 1; min-height: 0; overflow: auto; background: #1e1e1e; }
+.code-editor .cm-editor { height: 100%; font-family: Consolas, "Cascadia Code", "Courier New", monospace; font-size: 14px; }
+.cm-error-line { background: rgba(244, 71, 71, 0.25); }
 .restore { align-self: flex-start; margin: 8px; }
 .splitter { width: 6px; cursor: col-resize; background: var(--border); }
 .tabs { display: flex; gap: 4px; padding: 6px 8px 0; }
