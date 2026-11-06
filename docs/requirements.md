@@ -22,7 +22,7 @@ status: draft
 | RF-10 | Editar `Scenario`: lista de `Passenger` (instante, origem, destino) | 2 |
 | RF-11 | Métricas por `Passenger` e agregadas: espera e viagem | 2 |
 | RF-12 | Configurar o `Building`: quantidade de andares e de `Basement` | 3 |
-| RF-13 | Configurar `CallButton`: único, sobe/desce ou só desce | 3 |
+| RF-13 | Configurar `CallButton`: único, sobe/desce ou só desce (único e sobe/desce: SPEC-008) | 3 |
 | RF-14 | Múltiplos `Elevator` | 4 |
 | RF-15 | Capacidade da cabine | 4 |
 | RF-16 | Outras linguagens além de Python | 5 |
@@ -43,11 +43,12 @@ status: draft
 - RN-02: o `Elevator` se move andar a andar e só inverte o sentido parado num andar.
 - RN-03: o `Elevator` só para (abre portas) no `Target`; passa direto pelos demais andares. Vale também para o andar onde já está.
 - RN-04: `move_to` substitui o `Target`. `Target` para trás do movimento → segue até o próximo andar e inverte.
-- RN-05: ao parar: desembarca quem tem aquele destino; embarca quem espera no andar; o `CallButton` apaga; cada `Passenger` que embarcou aperta seu `CabinButton`.
-- RN-06: botão já aceso não gera novo `Event`.
+- RN-05: ao parar: desembarca quem tem aquele destino; embarca quem espera no andar; o `CallButton` apaga; cada `Passenger` que embarcou aperta seu `CabinButton`. Com `DirectionalCalls`, só apaga o `CallButton` da `Direction` atendida (RN-10).
+- RN-06: botão já aceso não gera novo `Event` (vale por andar e `Direction`).
 - RN-07: portas abrem e fecham sozinhas; o aluno não controla portas.
 - RN-08: capacidade ilimitada até RF-15.
 - RN-09: `Scenario` termina com sucesso quando todos os `Passenger` chegam; falha no `time_limit_s`.
+- RN-10: com `DirectionalCalls`, o andar mais baixo só tem `up` e o mais alto só tem `down`; o `Passenger` aperta o botão da `Direction` de `from→to`. Ao parar, só embarca quem vai na `Direction` em que o `Elevator` chegou (no mais baixo conta `up`, no mais alto `down`); quem chega sem movimento (`move_to` do andar atual) embarca todos. Quem não embarcou mantém o botão aceso.
 
 ## Fases
 - **1 — MVP:** RF-01 a RF-09; só feedback visual, sem nota.
@@ -65,7 +66,8 @@ Termo novo entra aqui antes de ser usado em doc ou código. Termo em EN, defini�
 | Floor | Andar, inteiro; 0 = T | Level, andar (no código) |
 | Basement | Andar negativo (subsolo) | Underground |
 | Elevator | Cabine que o aluno controla | Lift, car |
-| CallButton | Botão "chamar" no andar | Hall button |
+| CallButton | Botão "chamar" no andar; com `DirectionalCalls` há um `up` e um `down` | Hall button |
+| DirectionalCalls | Modo do `Building` em que cada andar tem `CallButton` `up` e `down` (menos `up` no mais alto e `down` no mais baixo) | Botão duplo |
 | CabinButton | Botão de andar no painel da cabine | Destination button |
 | Target | Andar onde o `Elevator` vai parar; definido por `move_to` | Destino (no código) |
 | Direction | `up` \| `down` \| `None` (parado) | Sentido |

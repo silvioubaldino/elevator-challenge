@@ -59,7 +59,7 @@ describe("autocomplete do editor", () => {
 
   it("completa o handler inteiro com def e corpo quando digitado sozinho", () => {
     expect(applyOption("on_ca", "on_call_button")).toBe(
-      "def on_call_button(elevator, floor):\n    pass",
+      "def on_call_button(elevator, floor, direction):\n    pass",
     )
   })
 

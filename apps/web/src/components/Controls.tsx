@@ -14,6 +14,9 @@ type Props = {
   compact: boolean
   speed: Speed
   tick: number
+  directionalCalls: boolean
+  directionalCallsLocked: boolean
+  onDirectionalCalls(on: boolean): void
   onScenario(id: string): void
   onRun(): void
   onPause(): void
@@ -44,6 +47,15 @@ export function Controls(props: Props) {
             </option>
           ))}
         </select>
+        <label className="directional-toggle">
+          <input
+            type="checkbox"
+            checked={props.directionalCalls}
+            disabled={props.directionalCallsLocked}
+            onChange={(e) => props.onDirectionalCalls(e.target.checked)}
+          />
+          {t.directionalCalls}
+        </label>
         {status && (
           <span className="muted status" role="status">
             {status}

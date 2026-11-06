@@ -4,6 +4,7 @@ import { t } from "../../i18n/pt-BR"
 import type { Speed } from "../../simulation"
 import { AvatarLayer } from "./AvatarLayer"
 import { CabinPanel } from "./CabinPanel"
+import { callButtonSpecs } from "./callButtons"
 import {
   CABIN_CX,
   CABIN_H,
@@ -32,10 +33,11 @@ type Props = {
   scenario: Scenario | null
   speed: Speed
   interactive: boolean
-  onPress(kind: "call" | "cabin", floor: number): void
+  directionalCalls: boolean
+  onPress(kind: "call" | "cabin", floor: number, direction?: "up" | "down"): void
 }
 
-export function Building({ state, scenario, speed, interactive, onPress }: Props) {
+export function Building({ state, scenario, speed, interactive, directionalCalls, onPress }: Props) {
   const { min_floor, max_floor } = scenario?.building ?? DEFAULT_BUILDING
   const geometry = useMemo(() => geometryFor(min_floor, max_floor), [min_floor, max_floor])
   const scenery = useMemo(() => ({ __html: sceneryMarkup(geometry) }), [geometry])
@@ -112,18 +114,18 @@ export function Building({ state, scenario, speed, interactive, onPress }: Props
             )}
           </g>
         </svg>
-        {geometry.floors.map((floor) => {
-          const lit = state.call_buttons.includes(floor)
+        {callButtonSpecs(geometry, directionalCalls).map(({ floor, direction, y, label }) => {
+          const lit = state.call_buttons.some((b) => b.floor === floor && b.direction === direction)
           return (
             <button
               type="button"
-              key={floor}
-              className={`call-button${lit ? " lit" : ""}`}
-              style={{ left: percentX(DIAL_X), top: percentY(geometry.floorBase(floor) - 26, geometry) }}
-              aria-label={t.callButton(t.floorLabel(floor))}
+              key={`${floor}-${direction}`}
+              className={`call-button${direction ? ` ${direction}` : ""}${lit ? " lit" : ""}`}
+              style={{ left: percentX(DIAL_X), top: percentY(y, geometry) }}
+              aria-label={label}
               aria-pressed={lit}
               disabled={!interactive}
-              onClick={() => onPress("call", floor)}
+              onClick={() => onPress("call", floor, direction ?? undefined)}
             />
           )
         })}

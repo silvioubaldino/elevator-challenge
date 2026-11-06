@@ -16,15 +16,26 @@ import {
 export type EngineOptions = {
   runtime: Runtime
   scenario?: ScenarioRules
+  directionalCalls?: boolean
 }
 
 const SANDBOX = { building: { min_floor: 0, max_floor: 10 }, start_floor: 0, passengers: [] }
 
 type Pax = { id: string; from: number; to: number; state: "waiting" | "riding" | "arrived" }
+type CallButton = SimulationState["call_buttons"][number]
+type Press = { kind: "call" | "cabin"; floor: number; direction: Direction }
 
-export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): Engine {
+const callKey = ({ floor, direction }: CallButton) => `${floor}:${direction}`
+const directionRank = (direction: Direction) => (direction === "down" ? 1 : 0)
+const eventText = (e: Event) => {
+  if (e.type === "idle") return "idle"
+  return e.type === "call_button" && e.direction ? `${e.type}(${e.floor}, ${e.direction})` : `${e.type}(${e.floor})`
+}
+
+export function createEngine({ runtime, scenario = SANDBOX, directionalCalls }: EngineOptions): Engine {
   assertValidScenario(scenario)
   const { min_floor, max_floor } = scenario.building
+  const directional = directionalCalls ?? scenario.building.directional_calls === true
   const timeLimitTicks =
     scenario.time_limit_s === undefined ? null : Math.round((scenario.time_limit_s * 1000) / TICK_MS)
 
@@ -39,14 +50,15 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
   let direction: Direction = null
   let doorTicks = 0
   let justOpened = false
+  let serving: Direction = null
 
-  const callButtons = new Set<number>()
+  const callButtons = new Map<string, CallButton>()
   const cabinButtons = new Set<number>()
   const passengers: Pax[] = []
   const upcoming = scenario.passengers
     .map((p) => ({ ...p, at_tick: Math.round((p.at_s * 1000) / TICK_MS) }))
     .sort((a, b) => a.at_tick - b.at_tick)
-  let presses: { kind: "call" | "cabin"; floor: number }[] = []
+  let presses: Press[] = []
   let pending: Event[] = [{ type: "idle" }]
 
   const inRange = (floor: number) =>
@@ -54,10 +66,33 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
   const atFloor = () => pos % FLOOR_TRAVEL_TICKS === 0
   const doorsOpen = () => doorTicks > 0
 
-  function lightCall(floor: number, events: Event[]) {
-    if (callButtons.has(floor)) return
-    callButtons.add(floor)
-    events.push({ type: "call_button", floor })
+  const callExists = ({ floor, direction }: CallButton) => {
+    if (!directional) return direction === null
+    return (direction === "up" && floor < max_floor) || (direction === "down" && floor > min_floor)
+  }
+  const directionOf = (p: Pax): Direction => (!directional ? null : p.to > p.from ? "up" : "down")
+  const canBoard = (p: Pax) => serving === null || directionOf(p) === serving
+
+  function lightCall(button: CallButton, events: Event[]) {
+    const key = callKey(button)
+    if (callButtons.has(key)) return
+    callButtons.set(key, button)
+    events.push({ type: "call_button", floor: button.floor, direction: button.direction })
+  }
+
+  function clearCalls(floor: number) {
+    for (const [key, button] of callButtons) {
+      if (button.floor === floor && (serving === null || button.direction === serving)) {
+        callButtons.delete(key)
+      }
+    }
+  }
+
+  function arrivalDirection(): Direction {
+    if (!directional) return null
+    if (currentFloor === max_floor) return "down"
+    if (currentFloor === min_floor) return "up"
+    return direction
   }
 
   function lightCabin(floor: number, events: Event[]) {
@@ -68,20 +103,23 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
 
   function board(p: Pax, events: Event[]) {
     p.state = "riding"
-    callButtons.delete(p.from)
+    callButtons.delete(callKey({ floor: p.from, direction: directionOf(p) }))
     lightCabin(p.to, events)
   }
 
   function arrive(events: Event[]) {
+    serving = arrivalDirection()
     direction = null
     target = null
     doorTicks = DOOR_CYCLE_TICKS
     justOpened = true
     events.push({ type: "stop", floor: currentFloor })
     cabinButtons.delete(currentFloor)
-    callButtons.delete(currentFloor)
+    clearCalls(currentFloor)
     for (const p of passengers) if (p.state === "riding" && p.to === currentFloor) p.state = "arrived"
-    for (const p of passengers) if (p.state === "waiting" && p.from === currentFloor) board(p, events)
+    for (const p of passengers) {
+      if (p.state === "waiting" && p.from === currentFloor && canBoard(p)) board(p, events)
+    }
   }
 
   function resolveAtFloor(events: Event[]) {
@@ -93,8 +131,8 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
   function applyPresses(events: Event[]) {
     const batch = presses
     presses = []
-    for (const { kind, floor } of batch) {
-      if (kind === "call") lightCall(floor, events)
+    for (const { kind, floor, direction } of batch) {
+      if (kind === "call") lightCall({ floor, direction }, events)
       else lightCabin(floor, events)
     }
   }
@@ -104,8 +142,8 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
       const { id, from, to } = upcoming.shift()!
       const p: Pax = { id, from, to, state: "waiting" }
       passengers.push(p)
-      if (doorsOpen() && currentFloor === from) board(p, events)
-      else lightCall(from, events)
+      if (doorsOpen() && currentFloor === from && canBoard(p)) board(p, events)
+      else lightCall({ floor: from, direction: directionOf(p) }, events)
     }
   }
 
@@ -167,7 +205,7 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
     move(events)
     runDoors(events)
     for (const e of events) {
-      log.push({ tick, kind: "event", text: e.type === "idle" ? "idle" : `${e.type}(${e.floor})` })
+      log.push({ tick, kind: "event", text: eventText(e) })
     }
 
     if (events.length > 0) {
@@ -213,7 +251,9 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
         target_floor: target,
         doors_open: doorsOpen(),
       },
-      call_buttons: sorted(callButtons),
+      call_buttons: [...callButtons.values()]
+        .sort((a, b) => a.floor - b.floor || directionRank(a.direction) - directionRank(b.direction))
+        .map((b) => ({ ...b })),
       cabin_buttons: sorted(cabinButtons),
       passengers: passengers.map((p) => ({ ...p })),
       log: log.map((l) => ({ ...l })),
@@ -228,8 +268,11 @@ export function createEngine({ runtime, scenario = SANDBOX }: EngineOptions): En
       queue = run.catch(() => undefined)
       return run
     },
-    press(kind, floor) {
-      if (inRange(floor)) presses.push({ kind, floor })
+    press(kind, floor, direction) {
+      if (!inRange(floor)) return
+      if (kind === "cabin") return void presses.push({ kind, floor, direction: null })
+      const pressed = directional ? (direction ?? null) : null
+      if (callExists({ floor, direction: pressed })) presses.push({ kind, floor, direction: pressed })
     },
     state,
   }

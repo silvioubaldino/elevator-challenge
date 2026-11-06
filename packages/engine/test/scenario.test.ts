@@ -52,11 +52,11 @@ describe("scenario", () => {
     })
     for (let i = 0; i < 20; i++) await engine.step()
     expect(engine.state().passengers).toEqual([])
-    expect(batches.flatMap((b) => b.events)).not.toContainEqual({ type: "call_button", floor: 4 })
+    expect(batches.flatMap((b) => b.events)).not.toContainEqual({ type: "call_button", floor: 4, direction: null })
 
     await engine.step()
     expect(engine.state().passengers).toEqual([{ id: "A", from: 4, to: 8, state: "waiting" }])
-    expect(batches.at(-1)).toMatchObject({ tick: 20, events: [{ type: "call_button", floor: 4 }] })
+    expect(batches.at(-1)).toMatchObject({ tick: 20, events: [{ type: "call_button", floor: 4, direction: null }] })
   })
 
   it("Passenger que aparece com as portas abertas embarca sem call_button", async () => {
@@ -75,7 +75,7 @@ describe("scenario", () => {
     for (let i = 0; i < 8; i++) await engine.step()
 
     const events = batches.flatMap((b) => b.events)
-    expect(events).not.toContainEqual({ type: "call_button", floor: 0 })
+    expect(events).not.toContainEqual({ type: "call_button", floor: 0, direction: null })
     expect(events).toContainEqual({ type: "cabin_button", floor: 6 })
     expect(engine.state().passengers[0]!.state).toBe("riding")
   })

@@ -120,6 +120,13 @@ button[aria-pressed="true"], .tabs button[aria-selected="true"] { border-color: 
   background: radial-gradient(circle at 35% 30%, #fff8e6, #efe3c4 60%, #c9b07a); border: 2px solid var(--brass-dark); box-shadow: none; }
 .call-button.lit { background: radial-gradient(circle at 35% 30%, #fffbe0, #ffd34d 55%, #ff9f1c); animation: call-pulse 1s ease-in-out infinite; }
 .call-button:disabled { opacity: 1; }
+.call-button.up { transform: translate(-50%, -105%); }
+.call-button.down { transform: translate(-50%, 5%); }
+.call-button.up::before, .call-button.down::before { inset: -2px; }
+.call-button.up::after, .call-button.down::after { content: ""; position: absolute; inset: 22%; background: #5a3d10; }
+.call-button.up::after { clip-path: polygon(50% 8%, 92% 88%, 8% 88%); }
+.call-button.down::after { clip-path: polygon(8% 12%, 92% 12%, 50% 92%); }
+.directional-toggle { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; white-space: nowrap; }
 @keyframes call-pulse { 0%, 100% { box-shadow: 0 0 2px #ffcf4d; } 50% { box-shadow: 0 0 12px #ffcf4d; } }
 
 .cabin-panel { flex: 0 0 200px; display: grid; gap: 10px; padding: 14px; border-radius: 22px; color: #2a1a05;
@@ -207,6 +214,7 @@ button[aria-pressed="true"], .tabs button[aria-selected="true"] { border-color: 
   .building { flex-wrap: wrap; justify-content: center; gap: 12px; }
   .building-stage { width: min(100%, max(220px, calc((var(--app-height, 100dvh) - 380px) * 560 / 812))); min-width: 0; border-radius: 14px; }
   .call-button { min-width: 16px; }
+  .call-button.up, .call-button.down { min-width: 12px; }
   .call-button::before { inset: -6px; }
   .cabin-panel { flex: 1 1 260px; max-width: 480px; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px 10px; padding: 12px; border-radius: 18px; }
   .cabin-panel-screen { font-size: 1.15rem; padding: 2px 10px; }

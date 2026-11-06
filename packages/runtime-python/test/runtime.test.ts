@@ -31,7 +31,7 @@ describe("runtime-python", () => {
     expect(await boot(template)).toBeNull()
     for (const event of [
       { type: "idle" },
-      { type: "call_button", floor: 3 },
+      { type: "call_button", floor: 3, direction: null },
       { type: "cabin_button", floor: 5 },
       { type: "stop", floor: 2 },
     ] as Event[]) {
@@ -41,7 +41,7 @@ describe("runtime-python", () => {
 
   it("move_to vira Command", async () => {
     await boot("def on_call_button(elevator, floor):\n    elevator.move_to(floor)\n")
-    expect(await runtime.handle(batch({ type: "call_button", floor: 7 }))).toEqual({
+    expect(await runtime.handle(batch({ type: "call_button", floor: 7, direction: null }))).toEqual({
       commands: [{ type: "move_to", floor: 7 }],
       logs: [],
     })
@@ -63,8 +63,8 @@ describe("runtime-python", () => {
       "calls = []\n" +
         "def on_call_button(elevator, floor):\n    calls.append(floor)\n    print(calls)\n",
     )
-    await runtime.handle(batch({ type: "call_button", floor: 3 }))
-    const second = await runtime.handle(batch({ type: "call_button", floor: 5 }))
+    await runtime.handle(batch({ type: "call_button", floor: 3, direction: null }))
+    const second = await runtime.handle(batch({ type: "call_button", floor: 5, direction: null }))
     expect(second).toEqual({ commands: [], logs: ["[3, 5]"] })
   }, 60_000)
 
@@ -72,13 +72,13 @@ describe("runtime-python", () => {
     await boot(
       "def on_call_button(elevator, floor):\n    elevator.move_to(6)\n    print(elevator.target_floor())\n",
     )
-    const result = await runtime.handle(batch({ type: "call_button", floor: 1 }))
+    const result = await runtime.handle(batch({ type: "call_button", floor: 1, direction: null }))
     expect(result).toMatchObject({ logs: ["6"] })
   }, 60_000)
 
   it("move_to fora do prédio", async () => {
     await boot("def on_call_button(elevator, floor):\n    elevator.move_to(11)\n")
-    const result = await runtime.handle(batch({ type: "call_button", floor: 1 }))
+    const result = await runtime.handle(batch({ type: "call_button", floor: 1, direction: null }))
     expect(result).toMatchObject({ error: { kind: "exception", line: 2 } })
     const { error } = result as { error: RuntimeError }
     expect(error.message).toContain("fora do prédio")
@@ -97,6 +97,20 @@ describe("runtime-python", () => {
     expect(Date.now() - started).toBeLessThan(1500)
     expect(await runtime.load("def on_idle(elevator):\n    print('ok')\n")).toBeNull()
     expect(await runtime.handle(batch({ type: "idle" }))).toEqual({ commands: [], logs: ["ok"] })
+  }, 60_000)
+
+  it("Handler de chamada recebe a direção quando aceita três parâmetros", async () => {
+    await boot("def on_call_button(elevator, floor, direction):\n    print(floor, direction)\n")
+    const result = await runtime.handle(batch({ type: "call_button", floor: 3, direction: "down" }))
+    expect(result).toEqual({ commands: [], logs: ["3 down"] })
+    const single = await runtime.handle(batch({ type: "call_button", floor: 4, direction: null }))
+    expect(single).toEqual({ commands: [], logs: ["4 None"] })
+  }, 60_000)
+
+  it("Handler de chamada com dois parâmetros segue funcionando com direção", async () => {
+    await boot("def on_call_button(elevator, floor):\n    print(floor)\n")
+    const result = await runtime.handle(batch({ type: "call_button", floor: 3, direction: "up" }))
+    expect(result).toEqual({ commands: [], logs: ["3"] })
   }, 60_000)
 
   it("Handler ausente", async () => {

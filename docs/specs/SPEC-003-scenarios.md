@@ -2,7 +2,7 @@
 id: SPEC-003
 status: draft
 parents: [RF-05, RF-08]
-related: [SPEC-001, RN-09]
+related: [SPEC-001, SPEC-008, RN-09]
 ---
 
 # SPEC-003: Scenario — formato e cenários fixos do MVP
@@ -14,7 +14,7 @@ related: [SPEC-001, RN-09]
 ```ts
 type Scenario = {
   id: string; title: string; description: string        // title/description em PT (UI)
-  building: { min_floor: number; max_floor: number }
+  building: { min_floor: number; max_floor: number; directional_calls?: boolean }   // default false (SPEC-008)
   start_floor: number; time_limit_s: number
   passengers: { id: string; at_s: number; from: number; to: number }[]   // at_s múltiplo de 0,1
 }

@@ -2,7 +2,7 @@
 id: SPEC-001
 status: draft
 parents: [RF-01, RF-03, RF-04]
-related: [ADR-002, RNF-04, RNF-07]
+related: [ADR-002, SPEC-008, RNF-04, RNF-07]
 ---
 
 # SPEC-001: Engine — simulação e contrato com o Runtime
@@ -14,7 +14,7 @@ related: [ADR-002, RNF-04, RNF-07]
 ```ts
 const TICK_MS = 100, FLOOR_TRAVEL_TICKS = 10, DOOR_CYCLE_TICKS = 20  // 1 s/andar · portas 2 s
 type Direction = "up" | "down" | null
-type Event = { type: "call_button" | "cabin_button" | "stop"; floor: number } | { type: "idle" }
+type Event = { type: "call_button"; floor: number; direction: Direction } | { type: "cabin_button" | "stop"; floor: number } | { type: "idle" }
 type Command = { type: "move_to"; floor: number }
 type ElevatorSnapshot = { current_floor: number; target_floor: number | null;
   direction: Direction; idle: boolean; min_floor: number; max_floor: number }
@@ -27,16 +27,16 @@ interface Runtime {                       // implementado por SPEC-002 (e futura
 }
 interface Engine {
   step(): Promise<SimulationState>        // avança 1 Tick
-  press(kind: "call" | "cabin", floor: number): void   // Sandbox; vale no próximo Tick
+  press(kind: "call" | "cabin", floor: number, direction?: "up" | "down"): void   // Sandbox; vale no próximo Tick
   state(): SimulationState
 }
 type SimulationState = { tick: number; status: "running" | "success" | "timeout" | "error";
   elevator: { position: number; direction: Direction; target_floor: number | null; doors_open: boolean };
-  call_buttons: number[]; cabin_buttons: number[];          // andares acesos
+  call_buttons: { floor: number; direction: Direction }[]; cabin_buttons: number[];   // acesos
   passengers: { id: string; from: number; to: number; state: "waiting" | "riding" | "arrived" }[];
   log: { tick: number; kind: "event" | "command" | "print" | "error"; text: string }[]; error?: RuntimeError }
 ```
-- Payloads que cruzam linguagens usam `snake_case`. `position` é contínuo (ex.: `3.4`) para a animação; `current_floor` = último andar alcançado.
+- `direction` do `call_button` e de `call_buttons` é `null` sem `DirectionalCalls` (botão único). Payloads que cruzam linguagens usam `snake_case`. `position` é contínuo (ex.: `3.4`) para a animação; `current_floor` = último andar alcançado.
 - Ordem de um `Tick`: entradas (`Scenario`/`press`) → movimento → `DoorCycle` → `handle` do batch → aplica `Command` na ordem (último `move_to` vence) → fim do `Scenario`.
 - `step()` só resolve depois do `Runtime` responder: o relógio fica parado enquanto o aluno pensa.
 

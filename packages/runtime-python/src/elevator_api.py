@@ -1,5 +1,6 @@
 import builtins
 import contextlib
+import inspect
 import io
 import json
 import traceback
@@ -44,6 +45,26 @@ class Elevator:
 
     def __repr__(self):
         return f"<Elevator andar={self.current_floor()} target={self.target_floor()}>"
+
+
+def _accepts_direction(handler):
+    try:
+        parameters = inspect.signature(handler).parameters.values()
+    except (TypeError, ValueError):
+        return False
+    positional = (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+    if any(p.kind == inspect.Parameter.VAR_POSITIONAL for p in parameters):
+        return True
+    return sum(1 for p in parameters if p.kind in positional) >= 3
+
+
+def _dispatch(handler, elevator, event):
+    if event["type"] == "idle":
+        handler(elevator)
+    elif event["type"] == "call_button" and _accepts_direction(handler):
+        handler(elevator, event["floor"], event.get("direction"))
+    else:
+        handler(elevator, event["floor"])
 
 
 def _student_line(error):
@@ -93,10 +114,7 @@ def handle(batch_json):
                 handler = _namespace.get("on_" + event["type"])
                 if not callable(handler):
                     continue
-                if event["type"] == "idle":
-                    handler(elevator)
-                else:
-                    handler(elevator, event["floor"])
+                _dispatch(handler, elevator, event)
     except Exception as error:
         return json.dumps({"error": _exception(error)})
     return json.dumps({"commands": commands, "logs": output.getvalue().splitlines()})

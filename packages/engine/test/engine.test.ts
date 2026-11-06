@@ -85,7 +85,7 @@ describe("engine", () => {
       if (s.elevator.position === 3) {
         passed = true
         expect(s.elevator.doors_open).toBe(false)
-        expect(s.call_buttons).toEqual([3])
+        expect(s.call_buttons).toEqual([{ floor: 3, direction: null }])
       }
       return s.elevator.position >= 4
     })
@@ -132,7 +132,7 @@ describe("engine", () => {
     engine.press("call", 0)
     const s = await steps(engine, 5)
     expect(s.elevator.doors_open).toBe(false)
-    expect(s.call_buttons).toEqual([0])
+    expect(s.call_buttons).toEqual([{ floor: 0, direction: null }])
   })
 
   it("ao parar desembarca, embarca, apaga o CallButton e envia stop antes de cabin_button", async () => {

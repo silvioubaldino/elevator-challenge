@@ -23,7 +23,7 @@ function snapshot(overrides: Partial<SimulationState> = {}): SimulationState {
 }
 
 const show = (state: SimulationState, scenario: Scenario | null = onTheWay) => (
-  <Building state={state} scenario={scenario} speed={1} interactive={false} onPress={() => {}} />
+  <Building state={state} scenario={scenario} speed={1} interactive={false} directionalCalls={false} onPress={() => {}} />
 )
 
 const avatar = (id: string) => screen.getByTestId(`avatar-${id}`)
@@ -47,7 +47,7 @@ describe("avatar", () => {
 
   it("mostra quem espera com o balão do destino e nome acessível", () => {
     const waiting: Passenger = { id: "B", from: 5, to: 9, state: "waiting" }
-    render(show(snapshot({ tick: 40, passengers: [waiting], call_buttons: [5] })))
+    render(show(snapshot({ tick: 40, passengers: [waiting], call_buttons: [{ floor: 5, direction: null }] })))
     const b = screen.getByRole("img", { name: "Passageiro B esperando, vai para 9" })
     expect(b).toHaveTextContent("→ 9")
     expect(b).toHaveAttribute("data-look", lookKey(avatarFromId("B")))

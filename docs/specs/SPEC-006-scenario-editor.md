@@ -1,6 +1,6 @@
 ---
 id: SPEC-006
-status: draft
+status: review
 parents: [RF-10]
 related: [SPEC-003, SPEC-004, SPEC-005, RNF-04]
 ---
