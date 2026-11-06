@@ -1,5 +1,5 @@
-def on_call_button(elevator, floor):
-    """Alguém apertou "chamar" no andar `floor`."""
+def on_call_button(elevator, floor, direction):
+    """Alguém apertou "chamar" no andar `floor`; `direction` é "up", "down" ou None (botão único)."""
     pass
 
 def on_cabin_button(elevator, floor):

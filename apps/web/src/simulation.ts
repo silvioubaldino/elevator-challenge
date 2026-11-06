@@ -29,15 +29,17 @@ export type SimulationView = {
 export type SimulationOptions = {
   runtime: Runtime
   clock?: Clock
+  directionalCalls?: boolean
   onChange(view: SimulationView): void
 }
 
 export type Simulation = {
   select(scenario: Scenario | null): void
+  setDirectionalCalls(on: boolean): void
   run(code: string): Promise<void>
   pause(): void
   restart(): void
-  press(kind: "call" | "cabin", floor: number): void
+  press(kind: "call" | "cabin", floor: number, direction?: "up" | "down"): void
   setSpeed(speed: Speed): void
   view(): SimulationView
   dispose(): void
@@ -46,10 +48,13 @@ export type Simulation = {
 export function createSimulation({
   runtime,
   clock = browserClock,
+  directionalCalls = false,
   onChange,
 }: SimulationOptions): Simulation {
   let scenario: Scenario | null = null
-  let engine: Engine = createEngine({ runtime, scenario: scenario ?? undefined })
+  let directional = directionalCalls
+  const newEngine = () => createEngine({ runtime, scenario: scenario ?? undefined, directionalCalls: directional })
+  let engine: Engine = newEngine()
   let phase: Phase = "ready"
   let speed: Speed = 1
   let epoch = 0
@@ -63,7 +68,7 @@ export function createSimulation({
 
   function reset() {
     epoch += 1
-    engine = createEngine({ runtime, scenario: scenario ?? undefined })
+    engine = newEngine()
     latest = engine.state()
     phase = "ready"
     publish()
@@ -112,6 +117,10 @@ export function createSimulation({
       scenario = next
       reset()
     },
+    setDirectionalCalls(on) {
+      directional = on
+      reset()
+    },
     async run(code) {
       if (phase === "running") return
       if (phase === "paused") {
@@ -135,8 +144,8 @@ export function createSimulation({
       publish()
     },
     restart: reset,
-    press(kind, floor) {
-      engine.press(kind, floor)
+    press(kind, floor, direction) {
+      engine.press(kind, floor, direction)
     },
     setSpeed(next) {
       speed = next

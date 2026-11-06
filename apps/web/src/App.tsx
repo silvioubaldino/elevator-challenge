@@ -11,7 +11,14 @@ import { ScenarioEditor } from "./components/ScenarioEditor"
 import { initialCustomScenario, toScenario, type CustomScenario } from "./customScenario"
 import { t } from "./i18n/pt-BR"
 import { createSimulation, type Clock, type Simulation, type Speed } from "./simulation"
-import { loadCustomScenario, loadSavedCode, saveCode, saveCustomScenario } from "./storage"
+import {
+  loadCustomScenario,
+  loadDirectionalCalls,
+  loadSavedCode,
+  saveCode,
+  saveCustomScenario,
+  saveDirectionalCalls,
+} from "./storage"
 import { useCompactLayout, useVisibleViewportHeight } from "./viewport"
 
 export type LeftTab = "code" | "statement" | "api"
@@ -29,6 +36,7 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
   const [scenarioId, setScenarioId] = useState(FREE_MODE)
   const [custom, setCustom] = useState<CustomScenario>(() => loadCustomScenario() ?? initialCustomScenario())
   const [speed, setSpeed] = useState<Speed>(1)
+  const [directionalCalls, setDirectionalCalls] = useState(loadDirectionalCalls)
   const [leftTab, setLeftTab] = useState<LeftTab>("code")
   const [leftWidth, setLeftWidth] = useState(520)
   const [showBuilding, setShowBuilding] = useState(true)
@@ -45,6 +53,7 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
     simulationRef.current = createSimulation({
       runtime: runtimeRef.current,
       clock,
+      directionalCalls,
       onChange: (next) => setView(next),
     })
     return simulationRef.current.view()
@@ -105,6 +114,12 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
     setRevealLine(line)
   }
 
+  const chooseDirectionalCalls = (on: boolean) => {
+    setDirectionalCalls(on)
+    saveDirectionalCalls(on)
+    simulation.setDirectionalCalls(on)
+  }
+
   const chooseSpeed = (next: Speed) => {
     setSpeed(next)
     simulation.setSpeed(next)
@@ -141,6 +156,9 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
         compact={compact}
         speed={speed}
         tick={state.tick}
+        directionalCalls={directionalCalls}
+        directionalCallsLocked={scenarioLocked}
+        onDirectionalCalls={chooseDirectionalCalls}
         onScenario={chooseScenario}
         onRun={run}
         onPause={() => simulation.pause()}
@@ -225,7 +243,8 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
             scenario={scenario}
             speed={speed}
             interactive={scenario === null}
-            onPress={(kind, floor) => simulation.press(kind, floor)}
+            directionalCalls={directionalCalls}
+            onPress={(kind, floor, direction) => simulation.press(kind, floor, direction)}
           />
           <Console log={state.log} />
         </section>

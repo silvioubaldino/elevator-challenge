@@ -34,6 +34,9 @@ export const t = {
   restoreTemplate: "Restaurar template",
   confirmRestore: "Restaurar o template? O código atual será perdido.",
   callButton: (floor: string) => `Chamar no andar ${floor}`,
+  callButtonUp: (floor: string) => `Chamar para subir no andar ${floor}`,
+  callButtonDown: (floor: string) => `Chamar para descer no andar ${floor}`,
+  directionalCalls: "Botões subir/descer",
   cabinButton: (floor: string) => `Ir ao andar ${floor}`,
   cabinPanel: "Painel da cabine",
   onBoard: (count: number) => `${count} a bordo`,
@@ -53,7 +56,7 @@ export const t = {
   apiFunctions: "Funções",
   api: {
     handlers: [
-      ["on_call_button(elevator, floor)", "Alguém apertou “chamar” no andar floor."],
+      ["on_call_button(elevator, floor, direction)", "Alguém apertou “chamar” no andar floor; direction é \"up\", \"down\" ou None (botão único)."],
       ["on_cabin_button(elevator, floor)", "Alguém dentro da cabine apertou o andar floor."],
       ["on_stop(elevator, floor)", "O elevador parou no andar floor e abriu as portas."],
       ["on_idle(elevator)", "O elevador está parado, de portas fechadas e sem destino."],

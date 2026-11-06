@@ -4,7 +4,8 @@ export const DOOR_CYCLE_TICKS = 20
 
 export type Direction = "up" | "down" | null
 export type Event =
-  | { type: "call_button" | "cabin_button" | "stop"; floor: number }
+  | { type: "call_button"; floor: number; direction: Direction }
+  | { type: "cabin_button" | "stop"; floor: number }
   | { type: "idle" }
 export type Command = { type: "move_to"; floor: number }
 export type ElevatorSnapshot = {
@@ -30,7 +31,7 @@ export interface Runtime {
 }
 export interface Engine {
   step(): Promise<SimulationState>
-  press(kind: "call" | "cabin", floor: number): void
+  press(kind: "call" | "cabin", floor: number, direction?: "up" | "down"): void
   state(): SimulationState
 }
 export type SimulationState = {
@@ -42,7 +43,7 @@ export type SimulationState = {
     target_floor: number | null
     doors_open: boolean
   }
-  call_buttons: number[]
+  call_buttons: { floor: number; direction: Direction }[]
   cabin_buttons: number[]
   passengers: { id: string; from: number; to: number; state: "waiting" | "riding" | "arrived" }[]
   log: { tick: number; kind: "event" | "command" | "print" | "error"; text: string }[]

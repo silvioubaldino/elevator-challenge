@@ -36,3 +36,21 @@ export function saveCustomScenario(custom: CustomScenario): void {
     return
   }
 }
+
+const DIRECTIONAL_CALLS_KEY = "elevator-challenge:directional-calls"
+
+export function loadDirectionalCalls(): boolean {
+  try {
+    return localStorage.getItem(DIRECTIONAL_CALLS_KEY) === "true"
+  } catch {
+    return false
+  }
+}
+
+export function saveDirectionalCalls(on: boolean): void {
+  try {
+    localStorage.setItem(DIRECTIONAL_CALLS_KEY, String(on))
+  } catch {
+    return
+  }
+}
