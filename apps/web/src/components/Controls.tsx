@@ -5,6 +5,7 @@ import type { Phase, Speed } from "../simulation"
 const SPEEDS: Speed[] = [1, 2, 4]
 export const FREE_MODE = "sandbox"
 export const CUSTOM_MODE = "custom"
+export const DEMO_MODE = "demo"
 
 type Props = {
   phase: Phase
@@ -20,6 +21,8 @@ type Props = {
   fleet: FleetSpec
   fleetLocked: boolean
   onFleet(fleet: FleetSpec): void
+  demoActive: boolean
+  onDemo(): void
   onScenario(id: string): void
   onRun(): void
   onPause(): void
@@ -48,6 +51,7 @@ export function Controls(props: Props) {
         >
           <option value={FREE_MODE}>{t.freeMode}</option>
           <option value={CUSTOM_MODE}>{t.customMode}</option>
+          {props.demoActive && <option value={DEMO_MODE}>{t.demo}</option>}
           {SCENARIOS.map((s) => (
             <option key={s.id} value={s.id}>
               {s.title}
@@ -120,6 +124,9 @@ export function Controls(props: Props) {
         )}
         <button type="button" onClick={props.onRestart}>
           {t.restart}
+        </button>
+        <button type="button" aria-pressed={props.demoActive} onClick={props.onDemo} disabled={!pythonReady}>
+          {t.demo}
         </button>
         <div role="group" aria-label={t.speedLabel} className="speeds">
           {SPEEDS.map((s) => (

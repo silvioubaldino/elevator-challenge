@@ -25,6 +25,7 @@ status: draft
 | RF-13 | Configurar `CallButton`: único, sobe/desce ou só desce (único e sobe/desce: SPEC-008) | 3 |
 | RF-14 | Múltiplos `Elevator` (1 a 3) e `ServiceElevator` a partir de 2 (SPEC-009) | 4 |
 | RF-15 | Capacidade da cabine | 4 |
+| RF-17 | `Demo`: um clique prepara o prédio mais complexo e roda uma solução de referência oculta (SPEC-010) | 4 |
 | RF-16 | Outras linguagens além de Python | 5 |
 
 ## Não-funcionais
@@ -56,7 +57,7 @@ status: draft
 - **1 — MVP:** RF-01 a RF-09; só feedback visual, sem nota.
 - **2 — Cenários abertos:** RF-10, RF-11.
 - **3 — Prédio configurável:** RF-12, RF-13 (`on_call_button` ganha `direction`).
-- **4 — Frota:** RF-14, RF-15.
+- **4 — Frota:** RF-14, RF-15, RF-17.
 - **5 — Plataforma:** RF-16; depois, avaliação, ranking e solução compartilhada por link.
 
 ## Glossário (GLO)
@@ -81,6 +82,7 @@ Termo novo entra aqui antes de ser usado em doc ou código. Termo em EN, defini�
 | Avatar | Bonequinho que representa um `Passenger` na UI | Sprite, boneco (no código) |
 | Scenario | Prédio inicial + lista de `Passenger` + `time_limit_s` | Teste, caso |
 | CustomScenario | `Scenario` montado pelo aluno no editor ("Meu cenário") | Cenário livre (confunde com `Sandbox`) |
+| Demo | Modo em que o `Engine` roda um `Scenario` fixo e complexo (`Fleet` de 3, `ServiceElevator`, `DirectionalCalls`) com uma solução de referência oculta | Exemplo, Solução |
 | Sandbox | Modo livre: sem `Scenario`, botões clicados à mão | Playground |
 | Tick | Passo de 100 ms de tempo simulado | Frame |
 | Event | Fato que o `Engine` entrega ao aluno | Callback |

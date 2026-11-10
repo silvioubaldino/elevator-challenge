@@ -6,6 +6,8 @@ on release, `## Unreleased` becomes `## [dd-MM-yyyy - vX.Y.Z]`.
 
 ## Unreleased
 
+- `apps/web`: botão "Demo" ao lado de Rodar: prepara 3 `Elevator` (1 de serviço) com `DirectionalCalls` e roda uma solução oculta num `Scenario` complexo (SPEC-010, AC-1..AC-5).
+
 - CI: prod na raiz e staging em `/staging/` da `gh-pages`; comentar `/preview` num PR do repositório atualiza só o staging, sem tocar em prod (ADR-004).
 
 - `engine`, `runtime-python`, `apps/web`: 1 a 3 `Elevator` e `ServiceElevator`: `CallButton` por tipo, `Event` com `elevator`, `elevator.fleet()`/`id()`/`is_service()` e seletor na UI; um `Elevator` não muda (SPEC-009, AC-1..AC-11).
