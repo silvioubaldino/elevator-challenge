@@ -5,11 +5,8 @@ on:
     types: [created]
 
 concurrency:
-  group: pages
+  group: gh-pages-write
   cancel-in-progress: false
-
-env:
-  PREVIEW_PATH: preview/pr-${{ github.event.issue.number }}
 
 jobs:
   guard:
@@ -34,69 +31,38 @@ jobs:
           gh api "repos/$REPO/issues/comments/$COMMENT_ID/reactions" -f content=eyes > /dev/null
           pr=$(gh api "repos/$REPO/pulls/$NUMBER")
           if [ "$(jq -r .head.repo.full_name <<<"$pr")" != "$REPO" ]; then
-            gh pr comment "$NUMBER" --repo "$REPO" --body "Preview só roda para PRs do próprio repositório (não de forks)."
+            gh pr comment "$NUMBER" --repo "$REPO" --body "Staging só roda para PRs do próprio repositório (não de forks)."
             exit 1
           fi
           echo "sha=$(jq -r .head.sha <<<"$pr")" >> "$GITHUB_OUTPUT"
 
-  build:
+  staging:
     needs: guard
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.repository.default_branch }}
-          path: main
-      - uses: actions/checkout@v4
-        with:
           ref: ${{ needs.guard.outputs.sha }}
-          path: pr
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: "*/package-lock.json"
       - run: npm ci
-        working-directory: main
-      - run: npm run build -w apps/web
-        working-directory: main
-        env:
-          BASE_PATH: /${{ github.event.repository.name }}/
-      - run: npm ci
-        working-directory: pr
       - run: npm run typecheck
-        working-directory: pr
       - run: npm run build -w apps/web
-        working-directory: pr
         env:
-          BASE_PATH: /${{ github.event.repository.name }}/${{ env.PREVIEW_PATH }}/
-      - run: |
-          mkdir -p "site/$PREVIEW_PATH"
-          cp -r main/apps/web/dist/. site/
-          cp -r pr/apps/web/dist/. "site/$PREVIEW_PATH/"
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-      pull-requests: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          BASE_PATH: /${{ github.event.repository.name }}/staging/
+      - run: .github/scripts/publish-pages.sh apps/web/dist staging
+        env:
+          PUBLISH_MESSAGE: "Staging: PR #${{ github.event.issue.number }} @ ${{ needs.guard.outputs.sha }}"
       - env:
           GH_TOKEN: ${{ github.token }}
           NUMBER: ${{ github.event.issue.number }}
           REPO: ${{ github.repository }}
-          URL: ${{ steps.deployment.outputs.page_url }}${{ env.PREVIEW_PATH }}/
+          SHA: ${{ needs.guard.outputs.sha }}
+          URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/staging/
         run: |
-          gh pr comment "$NUMBER" --repo "$REPO" --body "Preview pronto: $URL"
+          gh pr comment "$NUMBER" --repo "$REPO" --body "Staging atualizado (${SHA::7}): $URL"

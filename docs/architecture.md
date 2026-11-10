@@ -16,7 +16,7 @@ flowchart LR
     engine -->|SimulationState| ui
 ```
 
-Tudo roda no navegador; o site é estático (GitHub Pages).
+Tudo roda no navegador; o site é estático (GitHub Pages, branch `gh-pages`: prod na raiz, staging em `/staging/`; ADR-004).
 
 | Módulo | Papel | Spec |
 |--------|-------|------|

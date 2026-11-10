@@ -6,7 +6,7 @@ on release, `## Unreleased` becomes `## [dd-MM-yyyy - vX.Y.Z]`.
 
 ## Unreleased
 
-- CI: comentar `/preview` num PR do repositório publica um preview em `/preview/pr-N/` no GitHub Pages, sem tocar na produção (`.github/workflows/preview.yml`).
+- CI: prod na raiz e staging em `/staging/` da `gh-pages`; comentar `/preview` num PR do repositório atualiza só o staging, sem tocar em prod (ADR-004).
 
 - `engine`, `runtime-python`, `apps/web`: 1 a 3 `Elevator` e `ServiceElevator`: `CallButton` por tipo, `Event` com `elevator`, `elevator.fleet()`/`id()`/`is_service()` e seletor na UI; um `Elevator` não muda (SPEC-009, AC-1..AC-11).
 
