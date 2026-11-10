@@ -98,4 +98,5 @@ jobs:
           NUMBER: ${{ github.event.issue.number }}
           REPO: ${{ github.repository }}
           URL: ${{ steps.deployment.outputs.page_url }}${{ env.PREVIEW_PATH }}/
-        run: gh pr comment "$NUMBER" --repo "$REPO" --body "Preview pronto: $URL"
+        run: |
+          gh pr comment "$NUMBER" --repo "$REPO" --body "Preview pronto: $URL"
