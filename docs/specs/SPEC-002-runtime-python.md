@@ -1,8 +1,8 @@
 ---
 id: SPEC-002
-status: draft
+status: review
 parents: [RF-02, RF-03, RF-07]
-related: [ADR-001, ADR-002, SPEC-008, RNF-03]
+related: [ADR-001, ADR-002, SPEC-008, SPEC-009, RNF-03]
 ---
 
 # SPEC-002: Runtime Python — API do aluno
@@ -13,8 +13,8 @@ related: [ADR-001, ADR-002, SPEC-008, RNF-03]
 ## Contratos
 Template que o aluno recebe (`template.py`):
 ```python
-def on_call_button(elevator, floor, direction):
-    """Alguém apertou "chamar" no andar `floor`; `direction` é "up", "down" ou None (botão único)."""
+def on_call_button(elevator, floor, direction, service):
+    """Alguém apertou "chamar" no andar `floor`; `direction` é "up", "down" ou None (botão único); `service` é True no botão de serviço. `elevator` é o primeiro elevador do tipo do botão; veja elevator.fleet() para os demais."""
     pass
 
 def on_cabin_button(elevator, floor):
@@ -38,9 +38,13 @@ API do `elevator`:
 | `direction()` | `"up" \| "down" \| None` | Sentido no início do batch |
 | `is_idle()` | `bool` | `Idle` no início do batch |
 | `min_floor()` / `max_floor()` | `int` | Limites do `Building` |
+| `id()` | `int` | Número do `Elevator` (0, 1, 2) |
+| `is_service()` | `bool` | `ServiceElevator` (SPEC-009) |
+| `fleet()` | `list` | Todos os `Elevator`, por `id()`; `move_to` vale para o escolhido |
 
 - `print()` vai para o console da UI.
-- `on_call_button` com 2 parâmetros continua válido: `direction` só é passado se o `Handler` aceitar 3.
+- `on_call_button` com 2 ou 3 parâmetros continua válido: `direction` só é passado se o `Handler` aceitar 3 e `service` se aceitar 4.
+- Em `on_stop`, `on_cabin_button` e `on_idle`, `elevator` é quem gerou o `Event`.
 - `Handler` ausente = `Event` ignorado. Ordem das chamadas = ordem dos `Event` no batch.
 - Variáveis globais persistem entre batches; `load` começa um namespace limpo.
 - Timeout de `handle`: 1000 ms → o Worker é encerrado e recriado no próximo `load`.

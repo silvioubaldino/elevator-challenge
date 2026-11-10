@@ -1,5 +1,5 @@
 import { t } from "../../i18n/pt-BR"
-import { FLOOR_H, SHAFT_W, SHAFT_X, TOP, VIEW_W, WALL_L, type Geometry } from "./geometry"
+import { FLOOR_H, SHAFT_W, SHAFT_X, TOP, WALL_L, type Geometry } from "./geometry"
 
 type RoomKind = "lobby" | "garage" | "office" | "cafe" | "library" | "gym" | "lounge"
 
@@ -7,8 +7,6 @@ const UPPER_ROOMS: RoomKind[] = ["office", "cafe", "library", "office", "gym"]
 const WALLS = ["var(--wall-a)", "var(--wall-b)", "var(--wall-c)"]
 const BOOK_COLORS = ["#e85d75", "#5b8def", "#f2c94c", "#22a99a", "#8e6cd8", "#f2994a"]
 const ROOM_W = SHAFT_X - WALL_L
-const FACADE_X = SHAFT_X + SHAFT_W
-const FACADE_W = VIEW_W - WALL_L - FACADE_X
 
 function roomKind(floor: number, max: number): RoomKind {
   if (floor === 0) return "lobby"
@@ -65,6 +63,7 @@ function furniture(kind: RoomKind, top: number, floorY: number): string {
 }
 
 function room(floor: number, geometry: Geometry, index: number): string {
+  const facadeX = SHAFT_X + geometry.elevators * SHAFT_W
   const b = geometry.floorBase(floor)
   const top = b - FLOOR_H + 8
   const kind = roomKind(floor, geometry.max)
@@ -76,36 +75,43 @@ function room(floor: number, geometry: Geometry, index: number): string {
     furniture(kind, top, b),
     `<rect x="${WALL_L}" y="${top}" width="${ROOM_W}" height="${FLOOR_H - 8}" fill="var(--shade)"/>`,
     `<text x="${WALL_L + 8}" y="${b - 9}" class="scenery-text" font-size="13" fill="rgba(0,0,0,.35)">${t.floorLabel(floor)}</text>`,
-    `<rect x="${FACADE_X + 18}" y="${top + 9}" width="46" height="30" rx="8" fill="var(--win)" stroke="var(--facade-dark)" stroke-width="3"/>`,
-    `<rect x="${FACADE_X + 14}" y="${top + 39}" width="54" height="5" rx="2" fill="var(--facade-dark)"/>`,
+    `<rect x="${facadeX + 18}" y="${top + 9}" width="46" height="30" rx="8" fill="var(--win)" stroke="var(--facade-dark)" stroke-width="3"/>`,
+    `<rect x="${facadeX + 14}" y="${top + 39}" width="54" height="5" rx="2" fill="var(--facade-dark)"/>`,
   ].join("")
 }
 
 export function sceneryMarkup(geometry: Geometry): string {
-  const { floors, height } = geometry
+  const { floors, height, width } = geometry
+  const dx = width - 560
+  const facadeX = SHAFT_X + geometry.elevators * SHAFT_W
+  const facadeW = width - WALL_L - facadeX
+  const shafts = Array.from({ length: geometry.elevators }, (_, i) => i)
   const bodyH = floors.length * FLOOR_H
   const groundY = geometry.floorBase(Math.max(geometry.min, Math.min(0, geometry.max))) + 8
   const roofY = TOP - 4
   const parts = [
-    `<rect width="${VIEW_W}" height="${height}" fill="url(#sky)"/>`,
+    `<rect width="${width}" height="${height}" fill="url(#sky)"/>`,
     `<circle cx="70" cy="40" r="16" fill="var(--win)" opacity=".7"/>`,
-    `<rect x="0" y="${groundY}" width="${VIEW_W}" height="${height - groundY}" fill="var(--grass)"/><rect x="0" y="${groundY}" width="${VIEW_W}" height="12" fill="var(--walk)"/>`,
+    `<rect x="0" y="${groundY}" width="${width}" height="${height - groundY}" fill="var(--grass)"/><rect x="0" y="${groundY}" width="${width}" height="12" fill="var(--walk)"/>`,
     ...[[440, 28], [480, 40], [300, 22]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="22" ry="8" fill="#fff" opacity=".55"/>`),
-    `<rect x="${WALL_L - 6}" y="${roofY - 10}" width="${VIEW_W - 2 * WALL_L + 12}" height="14" rx="6" fill="var(--slab)"/>`,
+    `<rect x="${WALL_L - 6}" y="${roofY - 10}" width="${width - 2 * WALL_L + 12}" height="14" rx="6" fill="var(--slab)"/>`,
     `<rect x="150" y="${roofY - 44}" width="160" height="30" rx="12" fill="var(--sign)"/><rect x="170" y="${roofY - 14}" width="6" height="6" fill="#555"/><rect x="284" y="${roofY - 14}" width="6" height="6" fill="#555"/>`,
     `<text x="230" y="${roofY - 24}" text-anchor="middle" class="scenery-text" font-size="16" fill="#fff">${t.buildingName}</text>`,
-    `<rect x="460" y="${roofY - 40}" width="40" height="30" rx="10" fill="#9aa7b8"/>`,
-    `<rect x="${FACADE_X}" y="${TOP}" width="${FACADE_W}" height="${bodyH}" fill="var(--facade)"/>`,
+    `<rect x="${460 + dx}" y="${roofY - 40}" width="40" height="30" rx="10" fill="#9aa7b8"/>`,
+    `<rect x="${facadeX}" y="${TOP}" width="${facadeW}" height="${bodyH}" fill="var(--facade)"/>`,
     ...floors.map((floor, i) => room(floor, geometry, i)),
-    `<rect x="${SHAFT_X}" y="${TOP}" width="${SHAFT_W}" height="${bodyH}" fill="var(--shaft-art)"/>`,
-    `<rect x="${SHAFT_X + 6}" y="${TOP}" width="3" height="${bodyH}" fill="var(--rail)"/><rect x="${SHAFT_X + SHAFT_W - 9}" y="${TOP}" width="3" height="${bodyH}" fill="var(--rail)"/>`,
+    ...shafts.map((i) => {
+      const x = geometry.shaftX(i)
+      return `<rect x="${x}" y="${TOP}" width="${SHAFT_W}" height="${bodyH}" fill="var(--shaft-art)"/>
+        <rect x="${x + 6}" y="${TOP}" width="3" height="${bodyH}" fill="var(--rail)"/><rect x="${x + SHAFT_W - 9}" y="${TOP}" width="3" height="${bodyH}" fill="var(--rail)"/>`
+    }),
     ...floors.map((floor) => {
       const b = geometry.floorBase(floor)
       return `<rect x="${WALL_L - 4}" y="${b}" width="${ROOM_W + 4}" height="8" fill="var(--slab)"/><rect x="${WALL_L - 4}" y="${b}" width="${ROOM_W + 4}" height="2.5" fill="var(--slab-top)"/>
-        <rect x="${FACADE_X}" y="${b}" width="${FACADE_W + 4}" height="8" fill="var(--slab)"/>
-        <rect x="${SHAFT_X - 4}" y="${b - FLOOR_H + 10}" width="6" height="${FLOOR_H - 10}" rx="2" fill="var(--slab-top)"/>`
+        <rect x="${facadeX}" y="${b}" width="${facadeW + 4}" height="8" fill="var(--slab)"/>
+        ${shafts.map((i) => `<rect x="${geometry.shaftX(i) - 4}" y="${b - FLOOR_H + 10}" width="6" height="${FLOOR_H - 10}" rx="2" fill="var(--slab-top)"/>`).join("")}`
     }),
-    ...[[28, 14], [520, 18], [545, 12]].map(([x, r]) => `<circle cx="${x}" cy="${groundY + 4}" r="${r}" fill="#4caf72"/>`),
+    ...[[28, 14], [520 + dx, 18], [545 + dx, 12]].map(([x, r]) => `<circle cx="${x}" cy="${groundY + 4}" r="${r}" fill="#4caf72"/>`),
   ]
   return parts.join("")
 }

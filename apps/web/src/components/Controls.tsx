@@ -1,4 +1,4 @@
-import { SCENARIOS } from "@elevator/engine"
+import { MAX_ELEVATORS, SCENARIOS, type FleetSpec } from "@elevator/engine"
 import { t } from "../i18n/pt-BR"
 import type { Phase, Speed } from "../simulation"
 
@@ -17,11 +17,18 @@ type Props = {
   directionalCalls: boolean
   directionalCallsLocked: boolean
   onDirectionalCalls(on: boolean): void
+  fleet: FleetSpec
+  fleetLocked: boolean
+  onFleet(fleet: FleetSpec): void
   onScenario(id: string): void
   onRun(): void
   onPause(): void
   onRestart(): void
   onSpeed(speed: Speed): void
+}
+
+function resizeFleet(fleet: FleetSpec, count: number): FleetSpec {
+  return Array.from({ length: count }, (_, i) => fleet[i] ?? { service: false })
 }
 
 export function Controls(props: Props) {
@@ -56,6 +63,39 @@ export function Controls(props: Props) {
           />
           {t.directionalCalls}
         </label>
+        <div className="elevator-config">
+          <label>
+            {t.elevatorsLabel}
+            <select
+              aria-label={t.elevatorsLabel}
+              value={props.fleet.length}
+              disabled={props.fleetLocked}
+              onChange={(e) => props.onFleet(resizeFleet(props.fleet, Number(e.target.value)))}
+            >
+              {Array.from({ length: MAX_ELEVATORS }, (_, i) => i + 1).map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </label>
+          {props.fleet.map((car, i) =>
+            i === 0 ? null : (
+              <label key={i}>
+                <input
+                  type="checkbox"
+                  aria-label={t.serviceElevator(i + 1)}
+                  checked={car.service}
+                  disabled={props.fleetLocked}
+                  onChange={(e) =>
+                    props.onFleet(props.fleet.map((c, j) => (j === i ? { service: e.target.checked } : c)))
+                  }
+                />
+                {t.serviceElevator(i + 1)}
+              </label>
+            ),
+          )}
+        </div>
         {status && (
           <span className="muted status" role="status">
             {status}

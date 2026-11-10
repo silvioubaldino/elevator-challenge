@@ -1,8 +1,8 @@
 ---
 id: SPEC-001
-status: draft
+status: review
 parents: [RF-01, RF-03, RF-04]
-related: [ADR-002, SPEC-008, RNF-04, RNF-07]
+related: [ADR-002, SPEC-008, SPEC-009, RNF-04, RNF-07]
 ---
 
 # SPEC-001: Engine — simulação e contrato com o Runtime
@@ -14,11 +14,11 @@ related: [ADR-002, SPEC-008, RNF-04, RNF-07]
 ```ts
 const TICK_MS = 100, FLOOR_TRAVEL_TICKS = 10, DOOR_CYCLE_TICKS = 20  // 1 s/andar · portas 2 s
 type Direction = "up" | "down" | null
-type Event = { type: "call_button"; floor: number; direction: Direction } | { type: "cabin_button" | "stop"; floor: number } | { type: "idle" }
-type Command = { type: "move_to"; floor: number }
-type ElevatorSnapshot = { current_floor: number; target_floor: number | null;
-  direction: Direction; idle: boolean; min_floor: number; max_floor: number }
-type EventBatch = { tick: number; elevator: ElevatorSnapshot; events: Event[] }
+type Event = { type: "call_button"; floor: number; direction: Direction; service?: true }
+  | { type: "cabin_button" | "stop"; floor: number; elevator?: number } | { type: "idle"; elevator?: number }
+type Command = { type: "move_to"; floor: number; elevator?: number }   // elevator omitido = 0
+type ElevatorSnapshot = { id: number; service: boolean; current_floor: number; target_floor: number | null; direction: Direction; idle: boolean; min_floor: number; max_floor: number }
+type EventBatch = { tick: number; elevator: ElevatorSnapshot /* = elevators[0] */; elevators: ElevatorSnapshot[]; events: Event[] }
 type RuntimeError = { kind: "syntax" | "exception" | "timeout"; message: string; line?: number }
 interface Runtime {                       // implementado por SPEC-002 (e futuras linguagens)
   load(code: string): Promise<RuntimeError | null>
@@ -27,19 +27,20 @@ interface Runtime {                       // implementado por SPEC-002 (e futura
 }
 interface Engine {
   step(): Promise<SimulationState>        // avança 1 Tick
-  press(kind: "call" | "cabin", floor: number, direction?: "up" | "down"): void   // Sandbox; vale no próximo Tick
+  press(kind: "call" | "cabin", floor: number, direction?: "up" | "down", opts?: { service?: boolean; elevator?: number }): void  // Sandbox; próximo Tick
   state(): SimulationState
 }
 type SimulationState = { tick: number; status: "running" | "success" | "timeout" | "error";
   elevator: { position: number; direction: Direction; target_floor: number | null; doors_open: boolean };
-  call_buttons: { floor: number; direction: Direction }[]; cabin_buttons: number[];   // acesos
-  passengers: { id: string; from: number; to: number; state: "waiting" | "riding" | "arrived" }[];
+  elevators?: (SimulationState["elevator"] & { id: number; service: boolean; cabin_buttons: number[] })[]   // [0] = elevator
+  call_buttons: { floor: number; direction: Direction; service?: true }[]; cabin_buttons: number[];   // acesos
+  passengers: { id: string; from: number; to: number; state: "waiting" | "riding" | "arrived"; service?: true; elevator?: number | null }[];
   log: { tick: number; kind: "event" | "command" | "print" | "error"; text: string }[]; error?: RuntimeError }
 ```
+- Frota (SPEC-009): `service` e `elevator` só aparecem quando valem (`service: true`; 2+ elevadores); com 1 o formato é o de antes.
 - `direction` do `call_button` e de `call_buttons` é `null` sem `DirectionalCalls` (botão único). Payloads que cruzam linguagens usam `snake_case`. `position` é contínuo (ex.: `3.4`) para a animação; `current_floor` = último andar alcançado.
 - Ordem de um `Tick`: entradas (`Scenario`/`press`) → movimento → `DoorCycle` → `handle` do batch → aplica `Command` na ordem (último `move_to` vence) → fim do `Scenario`.
 - `step()` só resolve depois do `Runtime` responder: o relógio fica parado enquanto o aluno pensa.
-
 ## Critérios de aceite
 Cada teste usa um `Runtime` fake em TS.
 ```gherkin
@@ -111,10 +112,8 @@ Cenário: erro do aluno para a simulação
 ```
 
 ## Plano
-- [x] `packages/engine` com Vitest; tipos do §Contratos em `src/types.ts`
-- [x] máquina de estados do `Elevator`, botões e embarque (AC-2..AC-9)
-- [x] laço do `Tick` com `Runtime` assíncrono (AC-1, AC-10, AC-11) + testes AC-1..AC-11
+- [x] `packages/engine` com Vitest: tipos em `src/types.ts`, `Elevator`, botões, embarque e laço do `Tick` (AC-1..AC-11)
 
 ## Notas
-- `move_to` fora do prédio: barrado no `Runtime` (SPEC-002); o `Engine` ignora e registra no log.
+- `move_to` fora do prédio (ou `elevator` inexistente): barrado no `Runtime` (SPEC-002); o `Engine` ignora e registra no log.
 - `move_to(current_floor)` com portas abertas no andar: `Target` some, sem novo `DoorCycle`.

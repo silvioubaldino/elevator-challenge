@@ -82,7 +82,7 @@ button[aria-pressed="true"], .tabs button[aria-selected="true"] { border-color: 
 .banner.success { color: var(--ok); border-color: var(--ok); }
 
 .building { display: flex; gap: 16px; align-items: flex-start; }
-.building-stage { position: relative; flex: 0 1 auto; width: min(100%, calc(72vh * 560 / 812)); min-width: 320px; border-radius: 18px; overflow: hidden; box-shadow: 0 10px 30px rgba(30, 40, 80, 0.15); }
+.building-stage { position: relative; flex: 0 1 auto; width: min(100%, calc(72vh * var(--stage-ratio, 0.6897))); min-width: 320px; border-radius: 18px; overflow: hidden; box-shadow: 0 10px 30px rgba(30, 40, 80, 0.15); }
 .building-art { display: block; width: 100%; height: 100%; }
 .scenery-text { font-family: var(--font-display); font-weight: 700; }
 .sky-top { stop-color: var(--sky-1); }
@@ -95,6 +95,7 @@ button[aria-pressed="true"], .tabs button[aria-selected="true"] { border-color: 
 .doors-open .door { opacity: 0.65; }
 .doors-open .door-left { transform: translateX(-26px); }
 .doors-open .door-right { transform: translateX(26px); }
+.cabin-body.service { fill: #e8a33d; }
 .cabin-screen { fill: #1d1a14; }
 .cabin-screen-text { font-family: var(--font-display); font-weight: 700; font-size: 9px; fill: #ffb347; }
 .extra-riders circle { fill: var(--sign); stroke: #fff; stroke-width: 1.5; }
@@ -126,6 +127,15 @@ button[aria-pressed="true"], .tabs button[aria-selected="true"] { border-color: 
 .call-button.up::after, .call-button.down::after { content: ""; position: absolute; inset: 22%; background: #5a3d10; }
 .call-button.up::after { clip-path: polygon(50% 8%, 92% 88%, 8% 88%); }
 .call-button.down::after { clip-path: polygon(8% 12%, 92% 12%, 50% 92%); }
+.call-button.service { border-color: #8a4a00; background: radial-gradient(circle at 35% 30%, #ffe3b0, #f2b65a 60%, #c27a1c); }
+.call-button.service.lit { background: radial-gradient(circle at 35% 30%, #fffbe0, #ff9f1c 55%, #e05a00); }
+.bubble.service rect, .bubble.service path { fill: #ffd9a0; }
+.cabin-panel-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.cabin-panel-tabs button { padding: 2px 8px; font-size: 0.75rem; border-radius: 10px; }
+.cabin-panel-tabs button[aria-selected="true"] { background: #2a1a05; color: #ffd34d; }
+.cabin-panel-tabs button.service { border-color: #c27a1c; }
+.elevator-config { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.9rem; }
+.elevator-config label { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
 .directional-toggle { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; white-space: nowrap; }
 @keyframes call-pulse { 0%, 100% { box-shadow: 0 0 2px #ffcf4d; } 50% { box-shadow: 0 0 12px #ffcf4d; } }
 
@@ -154,7 +164,7 @@ button[aria-pressed="true"], .tabs button[aria-selected="true"] { border-color: 
 .scenario-editor:disabled { opacity: 0.65; }
 .scenario-limit { display: flex; align-items: center; gap: 8px; font-weight: 600; }
 .scenario-passengers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; width: 100%; }
-.scenario-passenger { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.scenario-passenger { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
 .scenario-avatar { width: 34px; height: 64px; flex: none; }
 .scenario-id { width: 1.2em; text-align: center; }
 .scenario-field { display: flex; align-items: center; gap: 4px; color: var(--muted); white-space: nowrap; }

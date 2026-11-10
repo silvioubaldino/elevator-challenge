@@ -23,7 +23,7 @@ status: draft
 | RF-11 | Métricas por `Passenger` e agregadas: espera e viagem | 2 |
 | RF-12 | Configurar o `Building`: quantidade de andares e de `Basement` | 3 |
 | RF-13 | Configurar `CallButton`: único, sobe/desce ou só desce (único e sobe/desce: SPEC-008) | 3 |
-| RF-14 | Múltiplos `Elevator` | 4 |
+| RF-14 | Múltiplos `Elevator` (1 a 3) e `ServiceElevator` a partir de 2 (SPEC-009) | 4 |
 | RF-15 | Capacidade da cabine | 4 |
 | RF-16 | Outras linguagens além de Python | 5 |
 
@@ -50,6 +50,8 @@ status: draft
 - RN-09: `Scenario` termina com sucesso quando todos os `Passenger` chegam; falha no `time_limit_s`.
 - RN-10: com `DirectionalCalls`, o andar mais baixo só tem `up` e o mais alto só tem `down`; o `Passenger` aperta o botão da `Direction` de `from→to`. Ao parar, só embarca quem vai na `Direction` em que o `Elevator` chegou (no mais baixo conta `up`, no mais alto `down`); quem chega sem movimento (`move_to` do andar atual) embarca todos. Quem não embarcou mantém o botão aceso.
 
+- RN-11: cada `Passenger` aperta o `CallButton` do seu tipo (comum ou serviço). Um `Elevator` só embarca `Passenger` do seu tipo e só apaga `CallButton` do seu tipo; RN-05, RN-06 e RN-10 valem por `Elevator`. Com dois do mesmo tipo no andar, embarca o de menor `id`.
+
 ## Fases
 - **1 — MVP:** RF-01 a RF-09; só feedback visual, sem nota.
 - **2 — Cenários abertos:** RF-10, RF-11.
@@ -66,6 +68,8 @@ Termo novo entra aqui antes de ser usado em doc ou código. Termo em EN, defini�
 | Floor | Andar, inteiro; 0 = T | Level, andar (no código) |
 | Basement | Andar negativo (subsolo) | Underground |
 | Elevator | Cabine que o aluno controla | Lift, car |
+| Fleet | Conjunto de `Elevator` do `Building` (1 a 3), identificados por `id` | Frota (no código) |
+| ServiceElevator | `Elevator` que só atende `Passenger` e `CallButton` de serviço; o `id` 0 nunca é | Freight |
 | CallButton | Botão "chamar" no andar; com `DirectionalCalls` há um `up` e um `down` | Hall button |
 | DirectionalCalls | Modo do `Building` em que cada andar tem `CallButton` `up` e `down` (menos `up` no mais alto e `down` no mais baixo) | Botão duplo |
 | CabinButton | Botão de andar no painel da cabine | Destination button |

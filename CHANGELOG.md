@@ -6,6 +6,8 @@ on release, `## Unreleased` becomes `## [dd-MM-yyyy - vX.Y.Z]`.
 
 ## Unreleased
 
+- `engine`, `runtime-python`, `apps/web`: 1 a 3 `Elevator` e `ServiceElevator`: `CallButton` por tipo, `Event` com `elevator`, `elevator.fleet()`/`id()`/`is_service()` e seletor na UI; um `Elevator` não muda (SPEC-009, AC-1..AC-11).
+
 - `engine`, `runtime-python`, `apps/web`: interruptor "Botões subir/descer" (`DirectionalCalls`): `CallButton` `up`/`down` por andar, `on_call_button` com `direction` e embarque só no sentido do `Elevator` (SPEC-008, AC-1..AC-8).
 - `apps/web`: corrige a rolagem no celular: cada seção rola por dentro e a página não quica nem recarrega ao arrastar o dedo (SPEC-007, AC-7).
 - `apps/web`: layout para celular com uma seção por vez, navegação inferior, Rodar levando ao prédio, "Ver linha N" no erro e barra de atalhos no editor (SPEC-007, AC-1..AC-6).

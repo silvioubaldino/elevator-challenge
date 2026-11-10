@@ -1,4 +1,4 @@
-import { SCENARIOS } from "@elevator/engine"
+import { SCENARIOS, type FleetSpec } from "@elevator/engine"
 import { createPythonRuntime, TEMPLATE, type PythonRuntime } from "@elevator/runtime-python"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { ApiReference } from "./components/ApiReference"
@@ -8,16 +8,18 @@ import { Console } from "./components/Console"
 import { Controls, CUSTOM_MODE, FREE_MODE } from "./components/Controls"
 import { SectionNav } from "./components/SectionNav"
 import { ScenarioEditor } from "./components/ScenarioEditor"
-import { initialCustomScenario, toScenario, type CustomScenario } from "./customScenario"
+import { hasServiceElevator, initialCustomScenario, toScenario, type CustomScenario } from "./customScenario"
 import { t } from "./i18n/pt-BR"
 import { createSimulation, type Clock, type Simulation, type Speed } from "./simulation"
 import {
   loadCustomScenario,
   loadDirectionalCalls,
+  loadFleet,
   loadSavedCode,
   saveCode,
   saveCustomScenario,
   saveDirectionalCalls,
+  saveFleet,
 } from "./storage"
 import { useCompactLayout, useVisibleViewportHeight } from "./viewport"
 
@@ -37,6 +39,7 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
   const [custom, setCustom] = useState<CustomScenario>(() => loadCustomScenario() ?? initialCustomScenario())
   const [speed, setSpeed] = useState<Speed>(1)
   const [directionalCalls, setDirectionalCalls] = useState(loadDirectionalCalls)
+  const [fleet, setFleet] = useState<FleetSpec>(loadFleet)
   const [leftTab, setLeftTab] = useState<LeftTab>("code")
   const [leftWidth, setLeftWidth] = useState(520)
   const [showBuilding, setShowBuilding] = useState(true)
@@ -54,6 +57,7 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
       runtime: runtimeRef.current,
       clock,
       directionalCalls,
+      fleet,
       onChange: (next) => setView(next),
     })
     return simulationRef.current.view()
@@ -92,7 +96,7 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
     setScenarioId(id)
     if (id === CUSTOM_MODE) {
       openLeftTab("statement")
-      simulation.select(toScenario(custom))
+      simulation.select(toScenario(custom, fleet))
       return
     }
     simulation.select(SCENARIOS.find((s) => s.id === id) ?? null)
@@ -101,7 +105,7 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
   const editCustom = (next: CustomScenario) => {
     setCustom(next)
     saveCustomScenario(next)
-    simulation.select(toScenario(next))
+    simulation.select(toScenario(next, fleet))
   }
 
   const run = () => {
@@ -118,6 +122,12 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
     setDirectionalCalls(on)
     saveDirectionalCalls(on)
     simulation.setDirectionalCalls(on)
+  }
+
+  const chooseFleet = (next: FleetSpec) => {
+    setFleet(next)
+    saveFleet(next)
+    simulation.setFleet(next, scenarioId === CUSTOM_MODE ? toScenario(custom, next) : undefined)
   }
 
   const chooseSpeed = (next: Speed) => {
@@ -159,6 +169,9 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
         directionalCalls={directionalCalls}
         directionalCallsLocked={scenarioLocked}
         onDirectionalCalls={chooseDirectionalCalls}
+        fleet={fleet}
+        fleetLocked={scenarioLocked}
+        onFleet={chooseFleet}
         onScenario={chooseScenario}
         onRun={run}
         onPause={() => simulation.pause()}
@@ -196,7 +209,12 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
           </div>
           {leftTab === "statement" && editingScenario && (
             <div role="tabpanel">
-              <ScenarioEditor value={custom} locked={scenarioLocked} onChange={editCustom} />
+              <ScenarioEditor
+                value={custom}
+                locked={scenarioLocked}
+                serviceAvailable={hasServiceElevator(fleet)}
+                onChange={editCustom}
+              />
             </div>
           )}
           {leftTab === "statement" && !editingScenario && (
@@ -244,7 +262,8 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
             speed={speed}
             interactive={scenario === null}
             directionalCalls={directionalCalls}
-            onPress={(kind, floor, direction) => simulation.press(kind, floor, direction)}
+            fleet={fleet}
+            onPress={(kind, floor, direction, opts) => simulation.press(kind, floor, direction, opts)}
           />
           <Console log={state.log} />
         </section>

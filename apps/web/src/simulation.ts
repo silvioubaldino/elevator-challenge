@@ -2,6 +2,8 @@ import {
   createEngine,
   TICK_MS,
   type Engine,
+  type FleetSpec,
+  type PressOptions,
   type Runtime,
   type Scenario,
   type SimulationState,
@@ -30,16 +32,18 @@ export type SimulationOptions = {
   runtime: Runtime
   clock?: Clock
   directionalCalls?: boolean
+  fleet?: FleetSpec
   onChange(view: SimulationView): void
 }
 
 export type Simulation = {
   select(scenario: Scenario | null): void
   setDirectionalCalls(on: boolean): void
+  setFleet(fleet: FleetSpec, scenario?: Scenario | null): void
   run(code: string): Promise<void>
   pause(): void
   restart(): void
-  press(kind: "call" | "cabin", floor: number, direction?: "up" | "down"): void
+  press(kind: "call" | "cabin", floor: number, direction?: "up" | "down", opts?: PressOptions): void
   setSpeed(speed: Speed): void
   view(): SimulationView
   dispose(): void
@@ -49,11 +53,14 @@ export function createSimulation({
   runtime,
   clock = browserClock,
   directionalCalls = false,
+  fleet = [{ service: false }],
   onChange,
 }: SimulationOptions): Simulation {
   let scenario: Scenario | null = null
   let directional = directionalCalls
-  const newEngine = () => createEngine({ runtime, scenario: scenario ?? undefined, directionalCalls: directional })
+  let cars = fleet
+  const newEngine = () =>
+    createEngine({ runtime, scenario: scenario ?? undefined, directionalCalls: directional, fleet: cars })
   let engine: Engine = newEngine()
   let phase: Phase = "ready"
   let speed: Speed = 1
@@ -121,6 +128,11 @@ export function createSimulation({
       directional = on
       reset()
     },
+    setFleet(next, nextScenario) {
+      cars = next
+      if (nextScenario !== undefined) scenario = nextScenario
+      reset()
+    },
     async run(code) {
       if (phase === "running") return
       if (phase === "paused") {
@@ -144,8 +156,8 @@ export function createSimulation({
       publish()
     },
     restart: reset,
-    press(kind, floor, direction) {
-      engine.press(kind, floor, direction)
+    press(kind, floor, direction, opts) {
+      engine.press(kind, floor, direction, opts)
     },
     setSpeed(next) {
       speed = next

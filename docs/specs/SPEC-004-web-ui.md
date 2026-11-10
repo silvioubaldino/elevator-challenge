@@ -2,7 +2,7 @@
 id: SPEC-004
 status: review
 parents: [RF-01, RF-02, RF-04, RF-05, RF-06, RF-07, RF-08, RF-09]
-related: [SPEC-001, SPEC-002, SPEC-003, RNF-05, RNF-06]
+related: [SPEC-001, SPEC-002, SPEC-003, RNF-05, RNF-06, SPEC-009]
 ---
 
 # SPEC-004: Web UI — editor, prédio animado e controles

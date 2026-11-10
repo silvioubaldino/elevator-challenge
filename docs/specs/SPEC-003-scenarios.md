@@ -1,8 +1,8 @@
 ---
 id: SPEC-003
-status: draft
+status: review
 parents: [RF-05, RF-08]
-related: [SPEC-001, SPEC-008, RN-09]
+related: [SPEC-001, SPEC-008, SPEC-009, RN-09]
 ---
 
 # SPEC-003: Scenario — formato e cenários fixos do MVP
@@ -14,9 +14,10 @@ related: [SPEC-001, SPEC-008, RN-09]
 ```ts
 type Scenario = {
   id: string; title: string; description: string        // title/description em PT (UI)
-  building: { min_floor: number; max_floor: number; directional_calls?: boolean }   // default false (SPEC-008)
+  building: { min_floor: number; max_floor: number; directional_calls?: boolean;   // default false (SPEC-008)
+    elevators?: { service: boolean }[] }   // default [{ service: false }]; 1 a 3; o primeiro não é de serviço (SPEC-009)
   start_floor: number; time_limit_s: number
-  passengers: { id: string; at_s: number; from: number; to: number }[]   // at_s múltiplo de 0,1
+  passengers: { id: string; at_s: number; from: number; to: number; service?: boolean }[]   // at_s múltiplo de 0,1
 }
 ```
 - Em `at_s` o `Passenger` aparece em `from` e aperta o `CallButton` (RN-06). Portas abertas no andar → embarca direto, sem `Event`.
