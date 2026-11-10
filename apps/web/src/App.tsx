@@ -1,13 +1,14 @@
-import { SCENARIOS, type FleetSpec } from "@elevator/engine"
+import { SCENARIOS, type FleetSpec, type Scenario } from "@elevator/engine"
 import { createPythonRuntime, TEMPLATE, type PythonRuntime } from "@elevator/runtime-python"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { ApiReference } from "./components/ApiReference"
 import { Building } from "./components/building/Building"
 import { CodeEditor, type CodeEditorHandle } from "./components/CodeEditor"
 import { Console } from "./components/Console"
-import { Controls, CUSTOM_MODE, FREE_MODE } from "./components/Controls"
+import { Controls, CUSTOM_MODE, DEMO_MODE, FREE_MODE } from "./components/Controls"
 import { SectionNav } from "./components/SectionNav"
 import { ScenarioEditor } from "./components/ScenarioEditor"
+import { DEMO_FLEET, DEMO_SCENARIO, loadDemoSolution } from "./demo"
 import { hasServiceElevator, initialCustomScenario, toScenario, type CustomScenario } from "./customScenario"
 import { t } from "./i18n/pt-BR"
 import { createSimulation, type Clock, type Simulation, type Speed } from "./simulation"
@@ -92,8 +93,19 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
     if (window.confirm(t.confirmRestore)) updateCode(TEMPLATE)
   }
 
+  const leaveDemo = (next: Scenario | null) => {
+    simulation.setDirectionalCalls(directionalCalls)
+    simulation.setFleet(fleet, next)
+  }
+
   const chooseScenario = (id: string) => {
+    const leaving = scenarioId === DEMO_MODE
     setScenarioId(id)
+    if (leaving) {
+      leaveDemo(id === CUSTOM_MODE ? toScenario(custom, fleet) : (SCENARIOS.find((s) => s.id === id) ?? null))
+      if (id === CUSTOM_MODE) openLeftTab("statement")
+      return
+    }
     if (id === CUSTOM_MODE) {
       openLeftTab("statement")
       simulation.select(toScenario(custom, fleet))
@@ -108,9 +120,18 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
     simulation.select(toScenario(next, fleet))
   }
 
-  const run = () => {
+  const run = async () => {
     setShowBuilding(true)
-    void simulation.run(code)
+    void simulation.run(scenarioId === DEMO_MODE ? await loadDemoSolution() : code)
+  }
+
+  const startDemo = async () => {
+    setScenarioId(DEMO_MODE)
+    setLeftTab("statement")
+    setShowBuilding(true)
+    simulation.setDirectionalCalls(true)
+    simulation.setFleet(DEMO_FLEET, DEMO_SCENARIO)
+    void simulation.run(await loadDemoSolution())
   }
 
   const showErrorLine = (line: number) => {
@@ -150,6 +171,9 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
 
   const { state, scenario, phase } = view
   const editingScenario = scenarioId === CUSTOM_MODE
+  const demoActive = scenarioId === DEMO_MODE
+  const shownFleet = demoActive ? DEMO_FLEET : fleet
+  const shownDirectionalCalls = demoActive || directionalCalls
   const scenarioLocked = phase === "running" || phase === "paused"
   const error = state.error
   const errorLine = error?.line ?? null
@@ -166,11 +190,13 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
         compact={compact}
         speed={speed}
         tick={state.tick}
-        directionalCalls={directionalCalls}
-        directionalCallsLocked={scenarioLocked}
+        directionalCalls={shownDirectionalCalls}
+        directionalCallsLocked={scenarioLocked || demoActive}
         onDirectionalCalls={chooseDirectionalCalls}
-        fleet={fleet}
-        fleetLocked={scenarioLocked}
+        fleet={shownFleet}
+        fleetLocked={scenarioLocked || demoActive}
+        demoActive={demoActive}
+        onDemo={startDemo}
         onFleet={chooseFleet}
         onScenario={chooseScenario}
         onRun={run}
@@ -261,8 +287,8 @@ export function App({ createRuntime = createPythonRuntime, clock }: AppProps) {
             scenario={scenario}
             speed={speed}
             interactive={scenario === null}
-            directionalCalls={directionalCalls}
-            fleet={fleet}
+            directionalCalls={shownDirectionalCalls}
+            fleet={shownFleet}
             onPress={(kind, floor, direction, opts) => simulation.press(kind, floor, direction, opts)}
           />
           <Console log={state.log} />

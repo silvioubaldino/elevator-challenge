@@ -9,6 +9,7 @@ export const t = {
   resume: "▶ Continuar",
   pause: "⏸ Pausar",
   restart: "⟲ Reiniciar",
+  demo: "Demo",
   loadingPython: "Carregando Python…",
   pythonFailed: "Não foi possível carregar o Python",
   scenarioLabel: "Cenário",
