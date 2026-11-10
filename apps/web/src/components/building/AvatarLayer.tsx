@@ -57,19 +57,19 @@ function Avatar({ placement: p, durationMs, walkMs }: { placement: AvatarPlaceme
       <g className="avatar-body">
         <AvatarFigure look={look} mood={p.mood} />
       </g>
-      {p.status === "waiting" && <DestinationBubble to={t.floorLabel(p.to)} />}
+      {p.status === "waiting" && <DestinationBubble to={t.floorLabel(p.to)} service={p.service} />}
     </g>
   )
 }
 
-function DestinationBubble({ to }: { to: string }) {
+function DestinationBubble({ to, service }: { to: string; service: boolean }) {
   return (
-    <g className="bubble" transform="translate(0,-62)" aria-hidden="true">
+    <g className={`bubble${service ? " service" : ""}`} transform="translate(0,-62)" aria-hidden="true">
       <rect x={-16} y={-11} width={32} height={17} rx={8.5} />
       <path d="M-3 6 L0 11 L3 6Z" />
       <rect className="bubble-seam" x={-3.5} y={4.5} width={7} height={2.4} />
       <text x={0} y={2} textAnchor="middle">
-        → {to}
+        → {to}{service ? " S" : ""}
       </text>
     </g>
   )

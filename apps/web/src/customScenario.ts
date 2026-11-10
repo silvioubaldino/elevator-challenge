@@ -1,4 +1,4 @@
-import { validateScenario, type Scenario } from "@elevator/engine"
+import { validateScenario, type FleetSpec, type Scenario } from "@elevator/engine"
 import { t } from "./i18n/pt-BR"
 
 export type CustomScenario = {
@@ -77,7 +77,14 @@ export function setTimeLimit(custom: CustomScenario, seconds: number): CustomSce
   }
 }
 
-export function toScenario(custom: CustomScenario): Scenario {
+export const hasServiceElevator = (fleet: FleetSpec) => fleet.some((e) => e.service)
+
+export function setService(custom: CustomScenario, id: string, on: boolean): CustomScenario {
+  return editPassenger(custom, id, ({ service: _previous, ...rest }) => (on ? { ...rest, service: true } : rest))
+}
+
+export function toScenario(custom: CustomScenario, fleet: FleetSpec = [{ service: false }]): Scenario {
+  const withService = hasServiceElevator(fleet)
   return {
     id: "custom",
     title: t.customMode,
@@ -85,14 +92,15 @@ export function toScenario(custom: CustomScenario): Scenario {
     building: CUSTOM_BUILDING,
     start_floor: 0,
     time_limit_s: custom.time_limit_s,
-    passengers: custom.passengers,
+    passengers: custom.passengers.map(({ service, ...rest }) => (service && withService ? { ...rest, service } : rest)),
   }
 }
 
 const isPassengerShape = (p: unknown): p is Scenario["passengers"][number] => {
   if (typeof p !== "object" || p === null) return false
-  const { id, at_s, from, to } = p as Record<string, unknown>
-  return typeof id === "string" && typeof at_s === "number" && typeof from === "number" && typeof to === "number"
+  const { id, at_s, from, to, service } = p as Record<string, unknown>
+  const serviceOk = service === undefined || typeof service === "boolean"
+  return typeof id === "string" && typeof at_s === "number" && typeof from === "number" && typeof to === "number" && serviceOk
 }
 
 export function parseCustomScenario(raw: unknown): CustomScenario | null {
@@ -102,5 +110,5 @@ export function parseCustomScenario(raw: unknown): CustomScenario | null {
   if (passengers.length === 0 || passengers.length > MAX_PASSENGERS) return null
   if (!passengers.every(isPassengerShape)) return null
   const custom = { time_limit_s, passengers }
-  return validateScenario(toScenario(custom)) === null ? custom : null
+  return validateScenario(toScenario(custom, [{ service: false }, { service: true }])) === null ? custom : null
 }

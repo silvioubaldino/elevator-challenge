@@ -1,11 +1,13 @@
+import { MAX_ELEVATORS, type FleetSpec } from "./types"
+
 export type Scenario = {
   id: string
   title: string
   description: string
-  building: { min_floor: number; max_floor: number; directional_calls?: boolean }
+  building: { min_floor: number; max_floor: number; directional_calls?: boolean; elevators?: FleetSpec }
   start_floor: number
   time_limit_s: number
-  passengers: { id: string; at_s: number; from: number; to: number }[]
+  passengers: { id: string; at_s: number; from: number; to: number; service?: boolean }[]
 }
 
 export type ScenarioRules = Pick<Scenario, "building" | "start_floor" | "passengers"> & {
@@ -21,6 +23,13 @@ export function validateScenario(scenario: ScenarioRules): string | null {
   const inBuilding = (floor: number) => Number.isInteger(floor) && floor >= min_floor && floor <= max_floor
 
   if (min_floor > max_floor) return "Prédio inválido: andar mínimo maior que o máximo"
+  const fleet = scenario.building.elevators ?? [{ service: false }]
+  if (fleet.length < 1 || fleet.length > MAX_ELEVATORS) {
+    return `Prédio inválido: de 1 a ${MAX_ELEVATORS} elevadores`
+  }
+  if (fleet[0]!.service) return "Prédio inválido: o primeiro elevador não pode ser de serviço"
+  const hasService = fleet.some((e) => e.service)
+
   if (!inBuilding(scenario.start_floor)) return `Andar inicial ${scenario.start_floor} fora do prédio`
   if (scenario.time_limit_s !== undefined && !(scenario.time_limit_s > 0)) {
     return "Limite de tempo deve ser maior que zero"
@@ -32,6 +41,7 @@ export function validateScenario(scenario: ScenarioRules): string | null {
     seen.add(p.id)
     if (!inBuilding(p.from)) return `Passenger ${p.id}: origem ${p.from} fora do prédio`
     if (!inBuilding(p.to)) return `Passenger ${p.id}: destino ${p.to} fora do prédio`
+    if (p.service && !hasService) return `Passenger ${p.id}: de serviço, mas o prédio não tem elevador de serviço`
     if (p.from === p.to) return `Passenger ${p.id}: origem e destino iguais`
     if (!(p.at_s >= 0) || !isMultipleOfTick(p.at_s)) {
       return `Passenger ${p.id}: instante ${p.at_s} deve ser múltiplo de 0,1 s`

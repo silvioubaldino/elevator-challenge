@@ -11,9 +11,10 @@ _namespace = {}
 
 
 class Elevator:
-    def __init__(self, snapshot, commands):
+    def __init__(self, snapshot, commands, fleet):
         self._snapshot = snapshot
         self._commands = commands
+        self._fleet = fleet
         self._target = snapshot["target_floor"]
 
     def move_to(self, floor):
@@ -22,8 +23,20 @@ class Elevator:
             raise ValueError(f"move_to espera um andar inteiro, recebeu {floor!r}")
         if not low <= floor <= high:
             raise ValueError(f"move_to({floor}): andar fora do prédio (de {low} a {high})")
-        self._commands.append({"type": "move_to", "floor": floor})
+        command = {"type": "move_to", "floor": floor}
+        if self.id() != 0:
+            command["elevator"] = self.id()
+        self._commands.append(command)
         self._target = floor
+
+    def id(self):
+        return self._snapshot.get("id", 0)
+
+    def is_service(self):
+        return self._snapshot.get("service", False)
+
+    def fleet(self):
+        return list(self._fleet)
 
     def current_floor(self):
         return self._snapshot["current_floor"]
@@ -44,25 +57,35 @@ class Elevator:
         return self._snapshot["max_floor"]
 
     def __repr__(self):
-        return f"<Elevator andar={self.current_floor()} target={self.target_floor()}>"
+        return f"<Elevator id={self.id()} andar={self.current_floor()} target={self.target_floor()}>"
 
 
-def _accepts_direction(handler):
+def _positional_count(handler):
     try:
-        parameters = inspect.signature(handler).parameters.values()
+        parameters = list(inspect.signature(handler).parameters.values())
     except (TypeError, ValueError):
-        return False
-    positional = (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+        return 0
     if any(p.kind == inspect.Parameter.VAR_POSITIONAL for p in parameters):
-        return True
-    return sum(1 for p in parameters if p.kind in positional) >= 3
+        return float("inf")
+    positional = (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+    return sum(1 for p in parameters if p.kind in positional)
 
 
-def _dispatch(handler, elevator, event):
+def _call_button_elevator(fleet, event):
+    service = event.get("service", False)
+    return next((e for e in fleet if e.is_service() == service), fleet[0])
+
+
+def _dispatch(handler, fleet, event):
+    if event["type"] == "call_button":
+        elevator = _call_button_elevator(fleet, event)
+        count = _positional_count(handler)
+        arguments = [event["floor"], event.get("direction"), event.get("service", False)]
+        handler(elevator, *arguments[: max(2, min(count, 4)) - 1])
+        return
+    elevator = fleet[event.get("elevator", 0)]
     if event["type"] == "idle":
         handler(elevator)
-    elif event["type"] == "call_button" and _accepts_direction(handler):
-        handler(elevator, event["floor"], event.get("direction"))
     else:
         handler(elevator, event["floor"])
 
@@ -106,7 +129,9 @@ def load(code):
 def handle(batch_json):
     batch = json.loads(batch_json)
     commands = []
-    elevator = Elevator(batch["elevator"], commands)
+    fleet = []
+    for snapshot in batch.get("elevators") or [batch["elevator"]]:
+        fleet.append(Elevator(snapshot, commands, fleet))
     output = io.StringIO()
     try:
         with contextlib.redirect_stdout(output):
@@ -114,7 +139,7 @@ def handle(batch_json):
                 handler = _namespace.get("on_" + event["type"])
                 if not callable(handler):
                     continue
-                _dispatch(handler, elevator, event)
+                _dispatch(handler, fleet, event)
     except Exception as error:
         return json.dumps({"error": _exception(error)})
     return json.dumps({"commands": commands, "logs": output.getvalue().splitlines()})

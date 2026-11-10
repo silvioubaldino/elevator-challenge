@@ -5,6 +5,8 @@ import { createPythonRuntime, type PythonRuntime } from "../src/runtime.ts"
 import { nodeWorker } from "./node-port.ts"
 
 const elevator = {
+  id: 0,
+  service: false,
   current_floor: 0,
   target_floor: null,
   direction: null,
@@ -13,7 +15,16 @@ const elevator = {
   max_floor: 10,
 } as const
 
-const batch = (...events: Event[]): EventBatch => ({ tick: 0, elevator: { ...elevator }, events })
+const batch = (...events: Event[]): EventBatch => ({
+  tick: 0,
+  elevator: { ...elevator },
+  elevators: [{ ...elevator }],
+  events,
+})
+const fleetBatch = (...events: Event[]): EventBatch => {
+  const second = { ...elevator, id: 1, service: true, current_floor: 5 }
+  return { tick: 0, elevator: { ...elevator }, elevators: [{ ...elevator }, second], events }
+}
 const template = readFileSync(new URL("../src/template.py", import.meta.url), "utf8")
 
 let runtime: PythonRuntime
@@ -116,5 +127,38 @@ describe("runtime-python", () => {
   it("Handler ausente", async () => {
     await boot("def on_call_button(elevator, floor):\n    pass\n")
     expect(await runtime.handle(batch({ type: "idle" }))).toEqual({ commands: [], logs: [] })
+  }, 60_000)
+
+  it("Handler de chamada com quatro parâmetros recebe o tipo do botão", async () => {
+    await boot("def on_call_button(elevator, floor, direction, service):\n    print(floor, direction, service, elevator.id())\n")
+    const social = await runtime.handle(fleetBatch({ type: "call_button", floor: 3, direction: null }))
+    expect(social).toEqual({ commands: [], logs: ["3 None False 0"] })
+    const serviceCall = await runtime.handle(fleetBatch({ type: "call_button", floor: 4, direction: null, service: true }))
+    expect(serviceCall).toEqual({ commands: [], logs: ["4 None True 1"] })
+  }, 60_000)
+
+  it("Handler de chamada com dois parâmetros segue valendo com frota", async () => {
+    await boot("def on_call_button(elevator, floor):\n    print(floor)\n    elevator.move_to(floor)\n")
+    const result = await runtime.handle(fleetBatch({ type: "call_button", floor: 4, direction: null, service: true }))
+    expect(result).toEqual({ commands: [{ type: "move_to", floor: 4, elevator: 1 }], logs: ["4"] })
+  }, 60_000)
+
+  it("fleet lista todos os elevadores e move_to vale para o escolhido", async () => {
+    await boot(
+      "def on_idle(elevator):\n" +
+        "    print([(e.id(), e.is_service(), e.current_floor()) for e in elevator.fleet()])\n" +
+        "    elevator.fleet()[1].move_to(8)\n",
+    )
+    const result = await runtime.handle(fleetBatch({ type: "idle", elevator: 0 }))
+    expect(result).toEqual({
+      commands: [{ type: "move_to", floor: 8, elevator: 1 }],
+      logs: ["[(0, False, 0), (1, True, 5)]"],
+    })
+  }, 60_000)
+
+  it("stop e idle chegam com o elevador que os gerou", async () => {
+    await boot("def on_stop(elevator, floor):\n    print(elevator.id(), floor)\n")
+    const result = await runtime.handle(fleetBatch({ type: "stop", floor: 5, elevator: 1 }))
+    expect(result).toEqual({ commands: [], logs: ["1 5"] })
   }, 60_000)
 })

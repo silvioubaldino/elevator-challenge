@@ -1,0 +1,68 @@
+name: Preview
+
+on:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: gh-pages-write
+  cancel-in-progress: false
+
+jobs:
+  guard:
+    if: >-
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/preview') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      sha: ${{ steps.pr.outputs.sha }}
+    steps:
+      - id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          gh api "repos/$REPO/issues/comments/$COMMENT_ID/reactions" -f content=eyes > /dev/null
+          pr=$(gh api "repos/$REPO/pulls/$NUMBER")
+          if [ "$(jq -r .head.repo.full_name <<<"$pr")" != "$REPO" ]; then
+            gh pr comment "$NUMBER" --repo "$REPO" --body "Staging só roda para PRs do próprio repositório (não de forks)."
+            exit 1
+          fi
+          echo "sha=$(jq -r .head.sha <<<"$pr")" >> "$GITHUB_OUTPUT"
+
+  staging:
+    needs: guard
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.guard.outputs.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build -w apps/web
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/staging/
+      - run: .github/scripts/publish-pages.sh apps/web/dist staging
+        env:
+          PUBLISH_MESSAGE: "Staging: PR #${{ github.event.issue.number }} @ ${{ needs.guard.outputs.sha }}"
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ needs.guard.outputs.sha }}
+          URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/staging/
+        run: |
+          gh pr comment "$NUMBER" --repo "$REPO" --body "Staging atualizado (${SHA::7}): $URL"

@@ -39,6 +39,9 @@ describe("autocomplete do editor", () => {
       "is_idle",
       "min_floor",
       "max_floor",
+      "id",
+      "is_service",
+      "fleet",
     ])
   })
 
@@ -59,7 +62,7 @@ describe("autocomplete do editor", () => {
 
   it("completa o handler inteiro com def e corpo quando digitado sozinho", () => {
     expect(applyOption("on_ca", "on_call_button")).toBe(
-      "def on_call_button(elevator, floor, direction):\n    pass",
+      "def on_call_button(elevator, floor, direction, service):\n    pass",
     )
   })
 

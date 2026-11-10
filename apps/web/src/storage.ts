@@ -1,3 +1,4 @@
+import { MAX_ELEVATORS, type FleetSpec } from "@elevator/engine"
 import { parseCustomScenario, type CustomScenario } from "./customScenario"
 
 const CODE_KEY = "elevator-challenge:code"
@@ -50,6 +51,32 @@ export function loadDirectionalCalls(): boolean {
 export function saveDirectionalCalls(on: boolean): void {
   try {
     localStorage.setItem(DIRECTIONAL_CALLS_KEY, String(on))
+  } catch {
+    return
+  }
+}
+
+const FLEET_KEY = "elevator-challenge:fleet"
+export const DEFAULT_FLEET: FleetSpec = [{ service: false }]
+
+export function parseFleet(raw: unknown): FleetSpec {
+  if (!Array.isArray(raw) || raw.length < 1 || raw.length > MAX_ELEVATORS) return DEFAULT_FLEET
+  const fleet = raw.map((e) => ({ service: typeof e === "object" && e !== null && (e as { service?: unknown }).service === true }))
+  return fleet[0]!.service ? DEFAULT_FLEET : fleet
+}
+
+export function loadFleet(): FleetSpec {
+  try {
+    const raw = localStorage.getItem(FLEET_KEY)
+    return raw === null ? DEFAULT_FLEET : parseFleet(JSON.parse(raw))
+  } catch {
+    return DEFAULT_FLEET
+  }
+}
+
+export function saveFleet(fleet: FleetSpec): void {
+  try {
+    localStorage.setItem(FLEET_KEY, JSON.stringify(fleet))
   } catch {
     return
   }

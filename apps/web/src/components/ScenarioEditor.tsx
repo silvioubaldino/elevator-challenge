@@ -6,6 +6,7 @@ import {
   removePassenger,
   setAppearsAt,
   setFrom,
+  setService,
   setTimeLimit,
   setTo,
   type CustomScenario,
@@ -17,6 +18,7 @@ import { avatarFromId } from "./avatar/look"
 type Props = {
   value: CustomScenario
   locked: boolean
+  serviceAvailable?: boolean
   onChange(next: CustomScenario): void
 }
 
@@ -25,7 +27,7 @@ const FLOORS = Array.from(
   (_, i) => CUSTOM_BUILDING.min_floor + i,
 )
 
-export function ScenarioEditor({ value, locked, onChange }: Props) {
+export function ScenarioEditor({ value, locked, serviceAvailable = false, onChange }: Props) {
   const onlyOne = value.passengers.length <= 1
   const full = value.passengers.length >= MAX_PASSENGERS
 
@@ -86,6 +88,17 @@ export function ScenarioEditor({ value, locked, onChange }: Props) {
                 ))}
               </select>
             </span>
+            {serviceAvailable && (
+              <span className="scenario-field">
+                <span aria-hidden="true">{t.scenarioEditor.serviceHeading}</span>
+                <input
+                  type="checkbox"
+                  aria-label={t.scenarioEditor.service(p.id)}
+                  checked={p.service === true}
+                  onChange={(e) => onChange(setService(value, p.id, e.target.checked))}
+                />
+              </span>
+            )}
             <button
               type="button"
               className="scenario-remove"

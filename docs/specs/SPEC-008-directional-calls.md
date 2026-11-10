@@ -1,8 +1,8 @@
 ---
 id: SPEC-008
-status: draft
+status: review
 parents: [RF-13]
-related: [SPEC-001, SPEC-002, SPEC-003, SPEC-004, RN-10]
+related: [SPEC-001, SPEC-002, SPEC-003, SPEC-004, RN-10, SPEC-009]
 ---
 
 # SPEC-008: DirectionalCalls — botões subir e descer
